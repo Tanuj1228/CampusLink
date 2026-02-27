@@ -3,43 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Dashboard</title>
+    <title>Company Dashboard | Job Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="navbar">
-        <h2>Company Dashboard</h2>
-        <button onclick="logout()">Logout</button>
-    </div>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <nav class="navbar">
+        <a href="index.html" class="logo">SupersetClone</a>
+        <div class="nav-links">
+            <button class="btn-primary" onclick="logout()" style="background: #dc3545;">Logout</button>
+        </div>
+    </nav>
     
-    <div class="container grid">
-        <div>
-            <h3>Post a New Job</h3>
+    <div class="container" style="flex-grow: 1; display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
+            <h3 style="margin-top: 0;">Post a New Job</h3>
             <form id="jobForm">
                 <input type="text" id="title" placeholder="Job Title" required>
                 <textarea id="description" rows="4" placeholder="Job Description" required></textarea>
                 <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
                 <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
-                <button type="submit">Post Job</button>
+                <button type="submit" class="btn-primary" style="width: 100%;">Post Job</button>
             </form>
         </div>
 
-        <div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>My Posted Jobs & Applicants</h3>
-                <button style="background-color: #007bff; padding: 5px 10px; font-size: 14px;" onclick="fetchMyJobs()">Refresh</button>
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">My Posted Jobs & Applicants</h3>
+                <button class="btn-outline" onclick="fetchMyJobs()">Refresh</button>
             </div>
             <div id="my-jobs-list"></div>
         </div>
     </div>
 
+    <footer class="footer">
+        <p>&copy; 2026 SupersetClone. All rights reserved.</p>
+    </footer>
+
     <script>
         const companyId = localStorage.getItem('companyId');
-        if (!companyId) window.location.href = '/auth.html';
+        if (!companyId) window.location.href = '/login.html';
 
         function logout() {
             localStorage.clear();
-            window.location.href = '/auth.html';
+            window.location.href = '/login.html';
         }
 
         document.getElementById('jobForm').addEventListener('submit', async (e) => {
@@ -90,10 +96,10 @@
             for (const job of result.data.getCompanyJobs) {
                 const applicantsHtml = await fetchApplicants(job.id);
                 jobsListDiv.innerHTML += `
-                    <div class="job-card">
-                        <h4>${job.title} <span style="color:#666; font-size: 14px;">(${job.category})</span></h4>
-                        <h5 style="margin-bottom: 5px;">Applicants:</h5>
-                        ${applicantsHtml || '<p style="color:#888; font-size:14px; margin-top:0;">No applicants yet.</p>'}
+                    <div style="border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                        <h4 style="margin-top: 0; color: #0d6efd;">${job.title} <span style="color:#6c757d; font-size: 14px;">(${job.category})</span></h4>
+                        <h5 style="margin-bottom: 10px; color: #495057;">Applicants:</h5>
+                        ${applicantsHtml || '<p style="color:#6c757d; font-size:14px; margin:0;">No applicants yet.</p>'}
                     </div>
                 `;
             }
@@ -114,12 +120,12 @@
                 body: JSON.stringify({ query })
             });
             const result = await response.json();
-            if (!result.data.getApplicants.length) return '';
+            if (!result.data.getApplicants || !result.data.getApplicants.length) return '';
             
             return result.data.getApplicants.map(app => `
-                <div class="applicant">
+                <div style="background: #f8f9fa; padding: 10px; border-left: 3px solid #0d6efd; margin-bottom: 5px; border-radius: 3px;">
                     <strong>${app.student.name}</strong> (${app.student.email})<br>
-                    <small>Status: ${app.status}</small>
+                    <small style="color: #6c757d;">Status: ${app.status}</small>
                 </div>
             `).join('');
         }

@@ -3,34 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
+    <title>Student Dashboard | Job Portal</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
-<body>
-    <div class="navbar">
-        <h2>Student Dashboard</h2>
-        <button onclick="logout()">Logout</button>
-    </div>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <nav class="navbar">
+        <a href="index.html" class="logo">SupersetClone</a>
+        <div class="nav-links">
+            <button class="btn-primary" onclick="logout()" style="background: #dc3545;">Logout</button>
+        </div>
+    </nav>
     
-    <div class="container">
-        <div id="notifications"></div>
+    <div class="container" style="flex-grow: 1;">
+        <div id="notifications" style="background: #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; font-weight: bold;"></div>
         
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)" style="margin-bottom: 0;">
-            <button onclick="fetchJobs()" style="background-color: #007bff; white-space: nowrap;">Search Jobs</button>
+            <button class="btn-primary" onclick="fetchJobs()" style="white-space: nowrap;">Search Jobs</button>
         </div>
         
         <div id="job-list"></div>
     </div>
 
+    <footer class="footer">
+        <p>&copy; 2026 SupersetClone. All rights reserved.</p>
+    </footer>
+
     <script>
         const studentId = localStorage.getItem('studentId');
-        if (!studentId) window.location.href = '/auth.html';
+        if (!studentId) window.location.href = '/login.html';
 
         function logout() {
             localStorage.clear();
-            window.location.href = '/auth.html';
+            window.location.href = '/login.html';
         }
 
         const socket = io();
@@ -67,20 +73,20 @@
             const result = await response.json();
             
             jobListDiv.innerHTML = '';
-            if (result.data.getJobs.length === 0) {
-                jobListDiv.innerHTML = '<p>No jobs found.</p>';
+            if (!result.data.getJobs || result.data.getJobs.length === 0) {
+                jobListDiv.innerHTML = '<p style="color: #6c757d;">No jobs found.</p>';
                 return;
             }
 
             result.data.getJobs.forEach(job => {
                 jobListDiv.innerHTML += `
-                    <div class="job-card">
-                        <h3>${job.title}</h3>
-                        <p style="color: #666;"><strong>Category:</strong> ${job.category}</p>
+                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h3 style="margin-top: 0; color: #0d6efd;">${job.title}</h3>
+                        <p style="color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
                         <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
-                            <button onclick="applyForJob(${job.id})">Apply Now</button>
-                            <a href="${job.jd_link}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: bold;">📄 View JD (Drive)</a>
+                            <button class="btn-primary" onclick="applyForJob(${job.id})">Apply Now</button>
+                            <a href="${job.jd_link}" target="_blank" style="color: #0d6efd; text-decoration: none; font-weight: bold;">📄 View JD</a>
                         </div>
                     </div>
                 `;
