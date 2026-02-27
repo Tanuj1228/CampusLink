@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Job Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh; background-color: #f4f7f6;">
+    <nav class="navbar" style="background-color: #343a40;">
+        <a href="index.html" class="logo" style="color: #fff;">Superset Admin</a>
+        <div class="nav-links">
+            <button class="btn-primary" onclick="window.location.href='/login.html'" style="background: #dc3545;">Exit Admin</button>
+        </div>
+    </nav>
+    
+    <div class="container" style="flex-grow: 1; max-width: 1400px;">
+        <h2 style="color: #343a40; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">University Placement Cell Overview</h2>
+        
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <button class="btn-primary" onclick="fetchAllJobs()" style="background-color: #343a40;">Load All Platform Jobs</button>
+        </div>
+
+        <div id="admin-dashboard-content" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+            </div>
+    </div>
+
+    <script>
+        async function fetchAllJobs() {
+            const query = `
+                query {
+                    getJobs(limit: 100, offset: 0) {
+                        id
+                        title
+                        category
+                        companyId
+                    }
+                }
+            `;
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const result = await response.json();
+            
+            const contentDiv = document.getElementById('admin-dashboard-content');
+            contentDiv.innerHTML = '';
+            
+            for (const job of result.data.getJobs) {
+                const applicantsHtml = await fetchApplicants(job.id);
+                contentDiv.innerHTML += `
+                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <h3 style="margin-top: 0; color: #343a40;">${job.title} <span style="font-size: 14px; color: #6c757d;">(ID: ${job.id})</span></h3>
+                            <a href="/api/export/applicants/${job.id}" class="btn-outline" style="padding: 4px 10px; font-size: 12px; border-color: #28a745; color: #28a745;">Download CSV</a>
+                        </div>
+                        <p style="margin: 5px 0 15px 0; color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category} | <strong>Company ID:</strong> ${job.companyId}</p>
+                        <h5 style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Tracked Applications</h5>
+                        <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                            ${applicantsHtml || '<p style="color:#6c757d; font-size:14px; margin:0;">No applications on record.</p>'}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchApplicants(jobId) {
+            const query = `
+                query {
+                    getApplicants(jobId: "${jobId}") {
+                        id
+                        status
+                        resume_link
+                        student { name email }
+                    }
+                }
+            `;
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const result = await response.json();
+            if (!result.data.getApplicants || !result.data.getApplicants.length) return '';
+            
+            return result.data.getApplicants.map(app => {
+                let statusColor = '#6c757d';
+                if(app.status === 'Hired') statusColor = '#28a745';
+                if(app.status === 'Rejected') statusColor = '#dc3545';
+                if(app.status === 'Interviewing') statusColor = '#ffc107';
+                if(app.status === 'Shortlisted') statusColor = '#17a2b8';
+
+                return `
+                <div style="background: #f8f9fa; padding: 12px; border-left: 4px solid ${statusColor}; margin-bottom: 10px; border-radius: 4px; font-size: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <strong>${app.student.name}</strong>
+                        <span style="background: ${statusColor}; color: ${app.status === 'Interviewing' ? '#000' : '#fff'}; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">${app.status}</span>
+                    </div>
+                    <div style="color: #495057; margin-bottom: 5px;">✉️ ${app.student.email}</div>
+                    <a href="${app.resume_link}" target="_blank" style="color: #0d6efd; text-decoration: none;">📄 View Drive Resume</a>
+                </div>
+                `;
+            }).join('');
+        }
+
+        fetchAllJobs();
+    </script>
+</body>
+</html>

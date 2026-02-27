@@ -6,6 +6,7 @@ const path = require('path');
 require('dotenv').config();
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/authRoutes');
+const exportRoutes = require('./routes/exportRoutes');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@as-integrations/express4');
 const typeDefs = require('./graphql/typeDefs');
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/export', exportRoutes);
 
 const apolloServer = new ApolloServer({
   typeDefs,

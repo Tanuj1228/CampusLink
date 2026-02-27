@@ -35,10 +35,6 @@
         </div>
     </div>
 
-    <footer class="footer">
-        <p>&copy; 2026 SupersetClone. All rights reserved.</p>
-    </footer>
-
     <script>
         const companyId = localStorage.getItem('companyId');
         if (!companyId) window.location.href = '/login.html';
@@ -55,39 +51,16 @@
             const category = document.getElementById('category').value;
             const jd_link = document.getElementById('jd_link').value;
 
-            const query = `
-                mutation {
-                    createJob(title: "${title}", description: "${description}", category: "${category}", jd_link: "${jd_link}", companyId: "${companyId}") {
-                        id
-                    }
-                }
-            `;
-            
-            await fetch('/graphql', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+            const query = `mutation { createJob(title: "${title}", description: "${description}", category: "${category}", jd_link: "${jd_link}", companyId: "${companyId}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             alert('Job Posted Successfully!');
             e.target.reset();
             fetchMyJobs();
         });
 
         async function fetchMyJobs() {
-            const query = `
-                query {
-                    getCompanyJobs(companyId: "${companyId}") {
-                        id
-                        title
-                        category
-                    }
-                }
-            `;
-            const response = await fetch('/graphql', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+            const query = `query { getCompanyJobs(companyId: "${companyId}") { id title category } }`;
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             
             const jobsListDiv = document.getElementById('my-jobs-list');
@@ -97,7 +70,10 @@
                 const applicantsHtml = await fetchApplicants(job.id);
                 jobsListDiv.innerHTML += `
                     <div style="border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-                        <h4 style="margin-top: 0; color: #0d6efd;">${job.title} <span style="color:#6c757d; font-size: 14px;">(${job.category})</span></h4>
+                        <div style="display:flex; justify-content:space-between;">
+                            <h4 style="margin-top: 0; color: #0d6efd;">${job.title}</h4>
+                            <a href="/api/export/applicants/${job.id}" class="btn-outline" style="padding: 2px 10px; font-size:12px;">Export CSV</a>
+                        </div>
                         <h5 style="margin-bottom: 10px; color: #495057;">Applicants:</h5>
                         ${applicantsHtml || '<p style="color:#6c757d; font-size:14px; margin:0;">No applicants yet.</p>'}
                     </div>
@@ -106,28 +82,48 @@
         }
 
         async function fetchApplicants(jobId) {
-            const query = `
-                query {
-                    getApplicants(jobId: "${jobId}") {
-                        status
-                        student { name email }
-                    }
-                }
-            `;
-            const response = await fetch('/graphql', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+            const query = `query { getApplicants(jobId: "${jobId}") { id status resume_link student { name email } interview { interview_date meeting_link } } }`;
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             if (!result.data.getApplicants || !result.data.getApplicants.length) return '';
             
             return result.data.getApplicants.map(app => `
-                <div style="background: #f8f9fa; padding: 10px; border-left: 3px solid #0d6efd; margin-bottom: 5px; border-radius: 3px;">
+                <div style="background: #f8f9fa; padding: 10px; border-left: 3px solid #0d6efd; margin-bottom: 10px; border-radius: 3px;">
                     <strong>${app.student.name}</strong> (${app.student.email})<br>
-                    <small style="color: #6c757d;">Status: ${app.status}</small>
+                    <a href="${app.resume_link}" target="_blank" style="font-size:14px;">View Resume</a><br>
+                    
+                    <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                        <select id="status-${app.id}" onchange="updateStatus(${app.id})" style="margin-bottom:0; width:auto;">
+                            <option value="Pending" ${app.status==='Pending'?'selected':''}>Pending</option>
+                            <option value="Shortlisted" ${app.status==='Shortlisted'?'selected':''}>Shortlisted</option>
+                            <option value="Interviewing" ${app.status==='Interviewing'?'selected':''}>Interviewing</option>
+                            <option value="Hired" ${app.status==='Hired'?'selected':''}>Hired</option>
+                            <option value="Rejected" ${app.status==='Rejected'?'selected':''}>Rejected</option>
+                        </select>
+                        <button class="btn-outline" style="padding: 5px;" onclick="scheduleInterview(${app.id})">Schedule Interview</button>
+                    </div>
+                    ${app.interview ? `<div style="font-size:12px; margin-top:5px; color:green;">Interview: ${new Date(Number(app.interview.interview_date)).toLocaleString()} - <a href="${app.interview.meeting_link}">Join</a></div>` : ''}
                 </div>
             `).join('');
+        }
+
+        async function updateStatus(applicationId) {
+            const status = document.getElementById(`status-${applicationId}`).value;
+            const query = `mutation { updateApplicationStatus(applicationId: "${applicationId}", status: "${status}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            alert('Status updated & email sent!');
+        }
+
+        async function scheduleInterview(applicationId) {
+            const dateStr = prompt("Enter interview date (YYYY-MM-DD HH:MM):");
+            const link = prompt("Enter meeting link:");
+            if(!dateStr || !link) return;
+
+            const date = new Date(dateStr).getTime().toString();
+            const query = `mutation { scheduleInterview(applicationId: "${applicationId}", interview_date: "${date}", meeting_link: "${link}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            alert('Interview scheduled!');
+            fetchMyJobs();
         }
 
         fetchMyJobs();

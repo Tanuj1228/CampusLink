@@ -20,19 +20,23 @@
         
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)" style="margin-bottom: 0;">
-            <button class="btn-primary" onclick="fetchJobs()" style="white-space: nowrap;">Search Jobs</button>
+            <button class="btn-primary" onclick="currentPage = 0; fetchJobs()" style="white-space: nowrap;">Search Jobs</button>
         </div>
         
         <div id="job-list"></div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <button class="btn-outline" onclick="prevPage()">Previous</button>
+            <button class="btn-outline" onclick="nextPage()">Next</button>
+        </div>
     </div>
-
-    <footer class="footer">
-        <p>&copy; 2026 SupersetClone. All rights reserved.</p>
-    </footer>
 
     <script>
         const studentId = localStorage.getItem('studentId');
         if (!studentId) window.location.href = '/login.html';
+        
+        let currentPage = 0;
+        const limit = 5;
 
         function logout() {
             localStorage.clear();
@@ -52,16 +56,12 @@
 
         async function fetchJobs() {
             const category = document.getElementById('categoryFilter').value;
-            const queryArgs = category ? `(category: "${category}")` : '';
+            const queryArgs = `(limit: ${limit}, offset: ${currentPage * limit}${category ? `, category: "${category}"` : ''})`;
             
             const query = `
                 query {
                     getJobs${queryArgs} {
-                        id
-                        title
-                        description
-                        category
-                        jd_link
+                        id title description category jd_link companyId
                     }
                 }
             `;
@@ -80,10 +80,11 @@
 
             result.data.getJobs.forEach(job => {
                 jobListDiv.innerHTML += `
-                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
                         <h3 style="margin-top: 0; color: #0d6efd;">${job.title}</h3>
                         <p style="color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
+                        <input type="url" id="resume-${job.id}" placeholder="Google Drive Resume Link" style="margin-top: 10px;">
                         <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
                             <button class="btn-primary" onclick="applyForJob(${job.id})">Apply Now</button>
                             <a href="${job.jd_link}" target="_blank" style="color: #0d6efd; text-decoration: none; font-weight: bold;">📄 View JD</a>
@@ -93,10 +94,16 @@
             });
         }
 
+        function prevPage() { if (currentPage > 0) { currentPage--; fetchJobs(); } }
+        function nextPage() { currentPage++; fetchJobs(); }
+
         async function applyForJob(jobId) {
+            const resume_link = document.getElementById(`resume-${jobId}`).value;
+            if (!resume_link) return alert('Please provide a resume link');
+
             const query = `
                 mutation {
-                    applyForJob(jobId: "${jobId}", studentId: "${studentId}") { id }
+                    applyForJob(jobId: "${jobId}", studentId: "${studentId}", resume_link: "${resume_link}") { id }
                 }
             `;
             await fetch('/graphql', {

@@ -17,20 +17,39 @@ const typeDefs = `#graphql
   type Application {
     id: ID!
     status: String!
+    resume_link: String!
     jobId: ID!
+    student: Student
+    interview: Interview
+  }
+
+  type Review {
+    id: ID!
+    rating: Int!
+    comment: String
     student: Student
   }
 
+  type Interview {
+    id: ID!
+    interview_date: String!
+    meeting_link: String!
+  }
+
   type Query {
-    getJobs(category: String): [Job]
+    getJobs(category: String, limit: Int, offset: Int): [Job]
     getJob(id: ID!): Job
     getCompanyJobs(companyId: ID!): [Job]
     getApplicants(jobId: ID!): [Application]
+    getCompanyReviews(companyId: ID!): [Review]
   }
 
   type Mutation {
     createJob(title: String!, description: String!, category: String!, jd_link: String!, companyId: ID!): Job
-    applyForJob(jobId: ID!, studentId: ID!): Application
+    applyForJob(jobId: ID!, studentId: ID!, resume_link: String!): Application
+    updateApplicationStatus(applicationId: ID!, status: String!): Application
+    scheduleInterview(applicationId: ID!, interview_date: String!, meeting_link: String!): Interview
+    addReview(companyId: ID!, studentId: ID!, rating: Int!, comment: String): Review
   }
 `;
 
