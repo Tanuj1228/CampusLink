@@ -65,11 +65,7 @@
                     }
                 }
             `;
-            const response = await fetch('/graphql', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             
             jobListDiv.innerHTML = '';
@@ -81,7 +77,10 @@
             result.data.getJobs.forEach(job => {
                 jobListDiv.innerHTML += `
                     <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-                        <h3 style="margin-top: 0; color: #0d6efd;">${job.title}</h3>
+                        <div style="display:flex; justify-content:space-between;">
+                            <h3 style="margin-top: 0; color: #0d6efd;">${job.title}</h3>
+                            <button class="btn-outline" style="padding: 2px 10px; font-size: 12px;" onclick="rateCompany(${job.companyId})">⭐ Rate Company</button>
+                        </div>
                         <p style="color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
                         <input type="url" id="resume-${job.id}" placeholder="Google Drive Resume Link" style="margin-top: 10px;">
@@ -101,17 +100,19 @@
             const resume_link = document.getElementById(`resume-${jobId}`).value;
             if (!resume_link) return alert('Please provide a resume link');
 
-            const query = `
-                mutation {
-                    applyForJob(jobId: "${jobId}", studentId: "${studentId}", resume_link: "${resume_link}") { id }
-                }
-            `;
-            await fetch('/graphql', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+            const query = `mutation { applyForJob(jobId: "${jobId}", studentId: "${studentId}", resume_link: "${resume_link}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             alert('Applied successfully!');
+        }
+
+        async function rateCompany(companyId) {
+            const rating = prompt("Enter rating (1-5):");
+            if (!rating || isNaN(rating) || rating < 1 || rating > 5) return alert("Please enter a valid rating between 1 and 5.");
+            const comment = prompt("Enter a brief review comment:");
+            
+            const query = `mutation { addReview(companyId: "${companyId}", studentId: "${studentId}", rating: ${rating}, comment: "${comment}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            alert('Review submitted successfully!');
         }
 
         fetchJobs();
