@@ -15,10 +15,16 @@ const resolvers = {
       return await Job.findAll({ where: { companyId } });
     },
     getApplicants: async (_, { jobId }) => {
-      return await Application.findAll({ 
+      const apps = await Application.findAll({ 
         where: { jobId },
-        include: [Student] 
+        include: [{ model: Student }] 
       });
+      return apps.map(app => ({
+        id: app.id,
+        status: app.status,
+        jobId: app.jobId,
+        student: app.Student
+      }));
     }
   },
   Mutation: {
