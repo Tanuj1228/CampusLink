@@ -4,33 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auth - Login & Register</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .container { display: flex; gap: 40px; }
-        .box { border: 1px solid #ccc; padding: 20px; border-radius: 5px; width: 300px; }
-        input { display: block; margin-bottom: 10px; width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px; width: 100%; cursor: pointer; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Authentication</h2>
-    <div class="container">
-        <div class="box">
-            <h3>Company Auth</h3>
+    <div class="navbar">
+        <h2>Job Portal</h2>
+    </div>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h3>Company Portal</h3>
             <input type="text" id="c-name" placeholder="Company Name (for Register)">
             <input type="email" id="c-email" placeholder="Email">
             <input type="password" id="c-password" placeholder="Password">
-            <button onclick="handleAuth('company', 'register')">Register Company</button>
-            <button style="margin-top:10px;" onclick="handleAuth('company', 'login')">Login Company</button>
+            <button onclick="handleAuth('company', 'register')">Register</button>
+            <button style="margin-top:10px; background-color: #007bff;" onclick="handleAuth('company', 'login')">Login</button>
         </div>
 
-        <div class="box">
-            <h3>Student Auth</h3>
+        <div class="auth-box">
+            <h3>Student Portal</h3>
             <input type="text" id="s-name" placeholder="Student Name (for Register)">
             <input type="email" id="s-email" placeholder="Email">
             <input type="password" id="s-password" placeholder="Password">
-            <button onclick="handleAuth('student', 'register')">Register Student</button>
-            <button style="margin-top:10px;" onclick="handleAuth('student', 'login')">Login Student</button>
+            <button onclick="handleAuth('student', 'register')">Register</button>
+            <button style="margin-top:10px; background-color: #007bff;" onclick="handleAuth('student', 'login')">Login</button>
         </div>
     </div>
 

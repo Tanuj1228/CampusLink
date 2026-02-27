@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Dashboard</title>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .job-card { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-        #notifications { color: red; font-weight: bold; margin-bottom: 20px; }
-    </style>
 </head>
 <body>
-    <h2>Tenant (Student) Dashboard</h2>
-    <button onclick="logout()" style="margin-bottom: 20px; background: red; color: white;">Logout</button>
+    <div class="navbar">
+        <h2>Student Dashboard</h2>
+        <button onclick="logout()">Logout</button>
+    </div>
     
-    <div id="notifications"></div>
-    
-    <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)">
-    <button onclick="fetchJobs()">Load / Filter Jobs</button>
-    
-    <div id="job-list" style="margin-top: 20px;"></div>
+    <div class="container">
+        <div id="notifications"></div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)" style="margin-bottom: 0;">
+            <button onclick="fetchJobs()" style="background-color: #007bff; white-space: nowrap;">Search Jobs</button>
+        </div>
+        
+        <div id="job-list"></div>
+    </div>
 
     <script>
         const studentId = localStorage.getItem('studentId');
-        if (!studentId) {
-            window.location.href = '/auth.html';
-        }
+        if (!studentId) window.location.href = '/auth.html';
 
         function logout() {
             localStorage.clear();
@@ -39,7 +39,8 @@
 
         socket.on('new_job_alert', (job) => {
             notificationDiv.innerText = `🔔 New Job Posted: ${job.title} (${job.category})!`;
-            setTimeout(() => { notificationDiv.innerText = ''; }, 5000);
+            notificationDiv.style.display = 'block';
+            setTimeout(() => { notificationDiv.style.display = 'none'; }, 5000);
             fetchJobs(); 
         });
 
@@ -66,15 +67,21 @@
             const result = await response.json();
             
             jobListDiv.innerHTML = '';
+            if (result.data.getJobs.length === 0) {
+                jobListDiv.innerHTML = '<p>No jobs found.</p>';
+                return;
+            }
+
             result.data.getJobs.forEach(job => {
                 jobListDiv.innerHTML += `
                     <div class="job-card">
                         <h3>${job.title}</h3>
-                        <p><strong>Category:</strong> ${job.category}</p>
+                        <p style="color: #666;"><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
-                        <a href="${job.jd_link}" target="_blank">Download JD</a>
-                        <br><br>
-                        <button onclick="applyForJob(${job.id})">Apply Now</button>
+                        <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
+                            <button onclick="applyForJob(${job.id})">Apply Now</button>
+                            <a href="${job.jd_link}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: bold;">📄 View JD (Drive)</a>
+                        </div>
                     </div>
                 `;
             });
@@ -83,10 +90,7 @@
         async function applyForJob(jobId) {
             const query = `
                 mutation {
-                    applyForJob(jobId: "${jobId}", studentId: "${studentId}") {
-                        id
-                        status
-                    }
+                    applyForJob(jobId: "${jobId}", studentId: "${studentId}") { id }
                 }
             `;
             await fetch('/graphql', {
