@@ -6,6 +6,9 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const resolvers = {
   Query: {
+    getStudent: async (_, { id }) => {
+      return await Student.findByPk(id);
+    },
     getJobs: async (_, { category, limit = 10, offset = 0 }) => {
       const where = category ? { category } : {};
       return await Job.findAll({ where, limit, offset });
@@ -73,6 +76,18 @@ const resolvers = {
     },
     addReview: async (_, { companyId, studentId, rating, comment }) => {
       return await Review.create({ companyId, studentId, rating, comment });
+    },
+    updateStudentProfile: async (_, { id, bio, skills, education, projects, portfolio_link }) => {
+      const student = await Student.findByPk(id);
+      if (student) {
+        student.bio = bio !== undefined ? bio : student.bio;
+        student.skills = skills !== undefined ? skills : student.skills;
+        student.education = education !== undefined ? education : student.education;
+        student.projects = projects !== undefined ? projects : student.projects;
+        student.portfolio_link = portfolio_link !== undefined ? portfolio_link : student.portfolio_link;
+        await student.save();
+      }
+      return student;
     }
   }
 };

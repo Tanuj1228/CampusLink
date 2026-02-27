@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Job Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <nav class="navbar">
+        <a href="index.html" class="logo">SupersetClone</a>
+        <div class="nav-links">
+            <button class="btn-outline" onclick="window.location.href='/student-dashboard.html'">Back to Dashboard</button>
+            <button class="btn-primary" onclick="logout()" style="background: #dc3545;">Logout</button>
+        </div>
+    </nav>
+    
+    <div class="container" style="flex-grow: 1; max-width: 800px;">
+        <h2 style="border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">Portfolio Builder</h2>
+        
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 20px;">
+            <form id="profileForm">
+                <label style="font-weight: 600;">Bio</label>
+                <textarea id="bio" rows="3" placeholder="Tell companies about yourself"></textarea>
+                
+                <label style="font-weight: 600;">Skills (Comma separated)</label>
+                <input type="text" id="skills" placeholder="Java, React, MySQL, Node.js">
+                
+                <label style="font-weight: 600;">Education</label>
+                <textarea id="education" rows="2" placeholder="B.Tech Computer Science, University Name, 2026"></textarea>
+                
+                <label style="font-weight: 600;">Projects</label>
+                <textarea id="projects" rows="3" placeholder="Superset Clone - Built using Node.js, GraphQL, MySQL"></textarea>
+                
+                <label style="font-weight: 600;">Portfolio / GitHub Link</label>
+                <input type="url" id="portfolio_link" placeholder="https://github.com/yourusername">
+                
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const studentId = localStorage.getItem('studentId');
+        if (!studentId) window.location.href = '/login.html';
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        async function fetchProfile() {
+            const query = `query { getStudent(id: "${studentId}") { bio skills education projects portfolio_link } }`;
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            const result = await response.json();
+            
+            if (result.data && result.data.getStudent) {
+                const s = result.data.getStudent;
+                if(s.bio) document.getElementById('bio').value = s.bio;
+                if(s.skills) document.getElementById('skills').value = s.skills;
+                if(s.education) document.getElementById('education').value = s.education;
+                if(s.projects) document.getElementById('projects').value = s.projects;
+                if(s.portfolio_link) document.getElementById('portfolio_link').value = s.portfolio_link;
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bio = document.getElementById('bio').value.replace(/\n/g, '\\n');
+            const skills = document.getElementById('skills').value;
+            const education = document.getElementById('education').value.replace(/\n/g, '\\n');
+            const projects = document.getElementById('projects').value.replace(/\n/g, '\\n');
+            const portfolio_link = document.getElementById('portfolio_link').value;
+
+            const query = `
+                mutation {
+                    updateStudentProfile(
+                        id: "${studentId}", 
+                        bio: "${bio}", 
+                        skills: "${skills}", 
+                        education: "${education}", 
+                        projects: "${projects}", 
+                        portfolio_link: "${portfolio_link}"
+                    ) { id }
+                }
+            `;
+            
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            alert('Profile updated successfully!');
+        });
+
+        fetchProfile();
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+// graphql/typeDefs.js (Update existing)
 const typeDefs = `#graphql
   type Job {
     id: ID!
@@ -12,6 +13,11 @@ const typeDefs = `#graphql
     id: ID!
     name: String!
     email: String!
+    bio: String
+    skills: String
+    education: String
+    projects: String
+    portfolio_link: String
   }
 
   type Application {
@@ -42,6 +48,7 @@ const typeDefs = `#graphql
     getCompanyJobs(companyId: ID!): [Job]
     getApplicants(jobId: ID!): [Application]
     getCompanyReviews(companyId: ID!): [Review]
+    getStudent(id: ID!): Student
   }
 
   type Mutation {
@@ -50,6 +57,7 @@ const typeDefs = `#graphql
     updateApplicationStatus(applicationId: ID!, status: String!): Application
     scheduleInterview(applicationId: ID!, interview_date: String!, meeting_link: String!): Interview
     addReview(companyId: ID!, studentId: ID!, rating: Int!, comment: String): Review
+    updateStudentProfile(id: ID!, bio: String, skills: String, education: String, projects: String, portfolio_link: String): Student
   }
 `;
 
