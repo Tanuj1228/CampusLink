@@ -6,29 +6,42 @@
     <title>Company Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
-        input, textarea { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; padding: 8px; }
+        input, textarea { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; padding: 8px; box-sizing: border-box; }
         button { padding: 10px 15px; cursor: pointer; }
+        #applicants-list { margin-top: 20px; }
+        .applicant-card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <h2>Company Dashboard - Post a Job</h2>
+    <h2>Company Dashboard</h2>
+    <button onclick="logout()" style="margin-bottom: 20px; background: red; color: white;">Logout</button>
+    
+    <h3>Post a Job</h3>
     <form id="jobForm">
         <input type="text" id="title" placeholder="Job Title" required>
         <textarea id="description" placeholder="Job Description" required></textarea>
         <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
         <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
-        <input type="number" id="companyId" placeholder="Company ID (e.g., 1)" required>
         <button type="submit">Post Job</button>
     </form>
 
     <script>
+        const companyId = localStorage.getItem('companyId');
+        if (!companyId) {
+            window.location.href = '/auth.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/auth.html';
+        }
+
         document.getElementById('jobForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const category = document.getElementById('category').value;
             const jd_link = document.getElementById('jd_link').value;
-            const companyId = parseInt(document.getElementById('companyId').value);
 
             const query = `
                 mutation {

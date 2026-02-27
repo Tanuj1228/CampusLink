@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth - Login & Register</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { display: flex; gap: 40px; }
+        .box { border: 1px solid #ccc; padding: 20px; border-radius: 5px; width: 300px; }
+        input { display: block; margin-bottom: 10px; width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px; width: 100%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Authentication</h2>
+    <div class="container">
+        <div class="box">
+            <h3>Company Auth</h3>
+            <input type="text" id="c-name" placeholder="Company Name (for Register)">
+            <input type="email" id="c-email" placeholder="Email">
+            <input type="password" id="c-password" placeholder="Password">
+            <button onclick="handleAuth('company', 'register')">Register Company</button>
+            <button style="margin-top:10px;" onclick="handleAuth('company', 'login')">Login Company</button>
+        </div>
+
+        <div class="box">
+            <h3>Student Auth</h3>
+            <input type="text" id="s-name" placeholder="Student Name (for Register)">
+            <input type="email" id="s-email" placeholder="Email">
+            <input type="password" id="s-password" placeholder="Password">
+            <button onclick="handleAuth('student', 'register')">Register Student</button>
+            <button style="margin-top:10px;" onclick="handleAuth('student', 'login')">Login Student</button>
+        </div>
+    </div>
+
+    <script>
+        async function handleAuth(role, action) {
+            const prefix = role === 'company' ? 'c-' : 's-';
+            const name = document.getElementById(prefix + 'name').value;
+            const email = document.getElementById(prefix + 'email').value;
+            const password = document.getElementById(prefix + 'password').value;
+
+            const body = action === 'register' ? { name, email, password } : { email, password };
+
+            const res = await fetch(`/api/auth/${role}/${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert(`${role} ${action} successful!`);
+                if (action === 'login') {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem(`${role}Id`, data[`${role}Id`]);
+                    window.location.href = role === 'company' ? '/company.html' : '/index.html';
+                }
+            } else {
+                alert(data.message || data.error);
+            }
+        }
+    </script>
+</body>
+</html>

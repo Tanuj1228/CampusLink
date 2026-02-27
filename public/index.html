@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Dashboard - WebSocket & GraphQL Test</title>
+    <title>Tenant Dashboard</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -13,12 +13,26 @@
 </head>
 <body>
     <h2>Tenant (Student) Dashboard</h2>
+    <button onclick="logout()" style="margin-bottom: 20px; background: red; color: white;">Logout</button>
+    
     <div id="notifications"></div>
     
-    <button onclick="fetchJobs()">Load Jobs via GraphQL</button>
+    <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)">
+    <button onclick="fetchJobs()">Load / Filter Jobs</button>
+    
     <div id="job-list" style="margin-top: 20px;"></div>
 
     <script>
+        const studentId = localStorage.getItem('studentId');
+        if (!studentId) {
+            window.location.href = '/auth.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/auth.html';
+        }
+
         const socket = io();
         const notificationDiv = document.getElementById('notifications');
         const jobListDiv = document.getElementById('job-list');
@@ -30,9 +44,12 @@
         });
 
         async function fetchJobs() {
+            const category = document.getElementById('categoryFilter').value;
+            const queryArgs = category ? `(category: "${category}")` : '';
+            
             const query = `
                 query {
-                    getJobs {
+                    getJobs${queryArgs} {
                         id
                         title
                         description
@@ -55,13 +72,32 @@
                         <h3>${job.title}</h3>
                         <p><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
-                        <a href="${job.jd_link}" target="_blank">Download JD (Drive Link)</a>
+                        <a href="${job.jd_link}" target="_blank">Download JD</a>
                         <br><br>
-                        <button>Apply Now</button>
+                        <button onclick="applyForJob(${job.id})">Apply Now</button>
                     </div>
                 `;
             });
         }
+
+        async function applyForJob(jobId) {
+            const query = `
+                mutation {
+                    applyForJob(jobId: "${jobId}", studentId: "${studentId}") {
+                        id
+                        status
+                    }
+                }
+            `;
+            await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            alert('Applied successfully!');
+        }
+
+        fetchJobs();
     </script>
 </body>
 </html>
