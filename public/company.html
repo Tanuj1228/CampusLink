@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, textarea { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; padding: 8px; }
+        button { padding: 10px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Company Dashboard - Post a Job</h2>
+    <form id="jobForm">
+        <input type="text" id="title" placeholder="Job Title" required>
+        <textarea id="description" placeholder="Job Description" required></textarea>
+        <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
+        <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
+        <input type="number" id="companyId" placeholder="Company ID (e.g., 1)" required>
+        <button type="submit">Post Job</button>
+    </form>
+
+    <script>
+        document.getElementById('jobForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const jd_link = document.getElementById('jd_link').value;
+            const companyId = parseInt(document.getElementById('companyId').value);
+
+            const query = `
+                mutation {
+                    createJob(title: "${title}", description: "${description}", category: "${category}", jd_link: "${jd_link}", companyId: "${companyId}") {
+                        id
+                        title
+                    }
+                }
+            `;
+            
+            await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            alert('Job Posted Successfully! Tenants will be notified.');
+            e.target.reset();
+        });
+    </script>
+</body>
+</html>
