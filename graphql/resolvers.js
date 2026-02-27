@@ -1,4 +1,4 @@
-const { Job, Application } = require('../models');
+const { Job, Application, Student } = require('../models');
 
 const resolvers = {
   Query: {
@@ -11,8 +11,14 @@ const resolvers = {
     getJob: async (_, { id }) => {
       return await Job.findByPk(id);
     },
+    getCompanyJobs: async (_, { companyId }) => {
+      return await Job.findAll({ where: { companyId } });
+    },
     getApplicants: async (_, { jobId }) => {
-      return await Application.findAll({ where: { jobId } });
+      return await Application.findAll({ 
+        where: { jobId },
+        include: [Student] 
+      });
     }
   },
   Mutation: {

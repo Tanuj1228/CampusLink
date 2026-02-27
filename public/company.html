@@ -7,23 +7,34 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         input, textarea { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 15px; cursor: pointer; }
-        #applicants-list { margin-top: 20px; }
-        .applicant-card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 15px; cursor: pointer; margin-bottom: 10px; }
+        .grid { display: flex; gap: 40px; }
+        .job-card { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; }
+        .applicant { background: #f9f9f9; padding: 10px; margin-top: 5px; border-left: 3px solid #007bff; }
     </style>
 </head>
 <body>
     <h2>Company Dashboard</h2>
-    <button onclick="logout()" style="margin-bottom: 20px; background: red; color: white;">Logout</button>
+    <button onclick="logout()" style="background: red; color: white;">Logout</button>
     
-    <h3>Post a Job</h3>
-    <form id="jobForm">
-        <input type="text" id="title" placeholder="Job Title" required>
-        <textarea id="description" placeholder="Job Description" required></textarea>
-        <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
-        <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
-        <button type="submit">Post Job</button>
-    </form>
+    <div class="grid">
+        <div>
+            <h3>Post a New Job</h3>
+            <form id="jobForm">
+                <input type="text" id="title" placeholder="Job Title" required>
+                <textarea id="description" placeholder="Job Description" required></textarea>
+                <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
+                <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
+                <button type="submit" style="background: green; color: white;">Post Job</button>
+            </form>
+        </div>
+
+        <div style="flex-grow: 1;">
+            <h3>My Posted Jobs & Applicants</h3>
+            <button onclick="fetchMyJobs()">Refresh Jobs</button>
+            <div id="my-jobs-list"></div>
+        </div>
+    </div>
 
     <script>
         const companyId = localStorage.getItem('companyId');
@@ -57,9 +68,73 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query })
             });
-            alert('Job Posted Successfully! Tenants will be notified.');
+            alert('Job Posted Successfully!');
             e.target.reset();
+            fetchMyJobs();
         });
+
+        async function fetchMyJobs() {
+            const query = `
+                query {
+                    getCompanyJobs(companyId: "${companyId}") {
+                        id
+                        title
+                        category
+                    }
+                }
+            `;
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const result = await response.json();
+            
+            const jobsListDiv = document.getElementById('my-jobs-list');
+            jobsListDiv.innerHTML = '';
+            
+            for (const job of result.data.getCompanyJobs) {
+                const applicantsHtml = await fetchApplicants(job.id);
+                jobsListDiv.innerHTML += `
+                    <div class="job-card">
+                        <h4>${job.title} (${job.category})</h4>
+                        <h5>Applicants:</h5>
+                        ${applicantsHtml || '<p>No applicants yet.</p>'}
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchApplicants(jobId) {
+            const query = `
+                query {
+                    getApplicants(jobId: "${jobId}") {
+                        id
+                        status
+                        student {
+                            name
+                            email
+                        }
+                    }
+                }
+            `;
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const result = await response.json();
+            
+            return result.data.getApplicants.map(app => `
+                <div class="applicant">
+                    <strong>Name:</strong> ${app.student.name} <br>
+                    <strong>Email:</strong> ${app.student.email} <br>
+                    <strong>Status:</strong> ${app.status}
+                </div>
+            `).join('');
+        }
+
+        fetchMyJobs();
     </script>
 </body>
 </html>

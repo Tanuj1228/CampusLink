@@ -8,16 +8,23 @@ const typeDefs = `#graphql
     companyId: ID!
   }
 
+  type Student {
+    id: ID!
+    name: String!
+    email: String!
+  }
+
   type Application {
     id: ID!
     status: String!
     jobId: ID!
-    studentId: ID!
+    student: Student
   }
 
   type Query {
     getJobs(category: String): [Job]
     getJob(id: ID!): Job
+    getCompanyJobs(companyId: ID!): [Job]
     getApplicants(jobId: ID!): [Application]
   }
 
