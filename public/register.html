@@ -20,6 +20,7 @@
         <div class="role-toggle">
             <button class="role-btn active" id="btn-student" onclick="setRole('student')">Student</button>
             <button class="role-btn" id="btn-company" onclick="setRole('company')">Company</button>
+            <button class="role-btn" id="btn-admin" onclick="setRole('admin')">Admin</button>
         </div>
 
         <input type="text" id="name" placeholder="Full Name / Company Name" required>
@@ -34,8 +35,7 @@
 
         function setRole(role) {
             selectedRole = role;
-            document.getElementById('btn-student').classList.remove('active');
-            document.getElementById('btn-company').classList.remove('active');
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-${role}`).classList.add('active');
         }
 
