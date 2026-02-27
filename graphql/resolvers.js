@@ -6,9 +6,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const resolvers = {
   Query: {
-    getStudent: async (_, { id }) => {
-      return await Student.findByPk(id);
-    },
     getJobs: async (_, { category, limit = 10, offset = 0 }) => {
       const where = category ? { category } : {};
       return await Job.findAll({ where, limit, offset });
@@ -36,6 +33,16 @@ const resolvers = {
     getCompanyReviews: async (_, { companyId }) => {
        const reviews = await Review.findAll({ where: { companyId }, include: [{ model: Student }] });
        return reviews.map(r => ({ id: r.id, rating: r.rating, comment: r.comment, student: r.Student }));
+    },
+    getStudent: async (_, { id }) => {
+      return await Student.findByPk(id);
+    },
+    getAdminAnalytics: async () => {
+      const totalStudents = await Student.count();
+      const totalJobs = await Job.count();
+      const totalApplications = await Application.count();
+      const totalHired = await Application.count({ where: { status: 'Hired' } });
+      return { totalStudents, totalJobs, totalApplications, totalHired };
     }
   },
   Mutation: {

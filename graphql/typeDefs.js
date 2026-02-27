@@ -1,4 +1,3 @@
-// graphql/typeDefs.js (Update existing)
 const typeDefs = `#graphql
   type Job {
     id: ID!
@@ -42,6 +41,13 @@ const typeDefs = `#graphql
     meeting_link: String!
   }
 
+  type Analytics {
+    totalStudents: Int
+    totalJobs: Int
+    totalApplications: Int
+    totalHired: Int
+  }
+
   type Query {
     getJobs(category: String, limit: Int, offset: Int): [Job]
     getJob(id: ID!): Job
@@ -49,6 +55,7 @@ const typeDefs = `#graphql
     getApplicants(jobId: ID!): [Application]
     getCompanyReviews(companyId: ID!): [Review]
     getStudent(id: ID!): Student
+    getAdminAnalytics: Analytics
   }
 
   type Mutation {
