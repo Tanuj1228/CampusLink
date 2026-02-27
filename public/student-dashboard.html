@@ -16,20 +16,31 @@
         </div>
     </nav>
     
-    <div class="container" style="flex-grow: 1;">
-        <div id="notifications" style="background: #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; font-weight: bold;"></div>
+    <div class="container" style="flex-grow: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
         
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)" style="margin-bottom: 0;">
-            <button class="btn-primary" onclick="currentPage = 0; fetchJobs()" style="white-space: nowrap;">Search Jobs</button>
+        <div>
+            <div id="notifications" style="background: #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; font-weight: bold;"></div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="categoryFilter" placeholder="Filter by Category (e.g., IT)" style="margin-bottom: 0;">
+                <button class="btn-primary" onclick="currentPage = 0; fetchJobs()" style="white-space: nowrap;">Search Jobs</button>
+            </div>
+            
+            <div id="job-list"></div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button class="btn-outline" onclick="prevPage()">Previous</button>
+                <button class="btn-outline" onclick="nextPage()">Next</button>
+            </div>
         </div>
-        
-        <div id="job-list"></div>
-        
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button class="btn-outline" onclick="prevPage()">Previous</button>
-            <button class="btn-outline" onclick="nextPage()">Next</button>
+
+        <div>
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 20px;">
+                <h3 style="margin-top: 0; border-bottom: 2px solid #0d6efd; padding-bottom: 10px;">📌 Campus Notices</h3>
+                <div id="notice-list" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
         </div>
+
     </div>
 
     <script>
@@ -55,17 +66,41 @@
             fetchJobs(); 
         });
 
+        socket.on('new_notice', (notice) => {
+            fetchNotices();
+            alert(`📢 New Announcement: ${notice.title}`);
+        });
+
+        async function fetchNotices() {
+            const query = `query { getNotices { id title content date_posted } }`;
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            const result = await response.json();
+            
+            const noticeListDiv = document.getElementById('notice-list');
+            noticeListDiv.innerHTML = '';
+            
+            if (!result.data.getNotices || result.data.getNotices.length === 0) {
+                noticeListDiv.innerHTML = '<p style="color: #6c757d; font-size: 14px;">No new announcements.</p>';
+                return;
+            }
+
+            result.data.getNotices.forEach(notice => {
+                const date = new Date(Number(notice.date_posted)).toLocaleDateString();
+                noticeListDiv.innerHTML += `
+                    <div style="background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+                        <h5 style="margin: 0 0 5px 0; color: #343a40;">${notice.title}</h5>
+                        <p style="margin: 0 0 5px 0; font-size: 13px; color: #495057;">${notice.content}</p>
+                        <small style="color: #6c757d;">Posted: ${date}</small>
+                    </div>
+                `;
+            });
+        }
+
         async function fetchJobs() {
             const category = document.getElementById('categoryFilter').value;
             const queryArgs = `(limit: ${limit}, offset: ${currentPage * limit}${category ? `, category: "${category}"` : ''})`;
             
-            const query = `
-                query {
-                    getJobs${queryArgs} {
-                        id title description category jd_link companyId
-                    }
-                }
-            `;
+            const query = `query { getJobs${queryArgs} { id title description category jd_link companyId } }`;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             
@@ -117,6 +152,7 @@
         }
 
         fetchJobs();
+        fetchNotices();
     </script>
 </body>
 </html>

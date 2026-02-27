@@ -1,4 +1,4 @@
-const { Job, Application, Student, Company, Review, Interview } = require('../models');
+const { Job, Application, Student, Company, Review, Interview, Notice } = require('../models');
 const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
 
@@ -43,14 +43,15 @@ const resolvers = {
       const totalApplications = await Application.count();
       const totalHired = await Application.count({ where: { status: 'Hired' } });
       return { totalStudents, totalJobs, totalApplications, totalHired };
+    },
+    getNotices: async () => {
+      return await Notice.findAll({ order: [['date_posted', 'DESC']] });
     }
   },
   Mutation: {
     createJob: async (_, { title, description, category, jd_link, companyId }, context) => {
       const job = await Job.create({ title, description, category, jd_link, companyId });
-      if (context.io) {
-        context.io.emit('new_job_alert', job);
-      }
+      if (context.io) context.io.emit('new_job_alert', job);
       return job;
     },
     applyForJob: async (_, { jobId, studentId, resume_link }) => {
@@ -68,11 +69,7 @@ const resolvers = {
             subject: `Application Update: ${application.Job.title}`,
             text: `Your application status has been updated to: ${status}`,
         };
-        try { 
-          await sgMail.send(msg); 
-        } catch (error) { 
-          console.error('SendGrid Error:', error.response ? error.response.body : error); 
-        }
+        try { await sgMail.send(msg); } catch (error) { console.error('SendGrid Error:', error); }
       }
       return application;
     },
@@ -95,6 +92,11 @@ const resolvers = {
         await student.save();
       }
       return student;
+    },
+    createNotice: async (_, { title, content }, context) => {
+      const notice = await Notice.create({ title, content });
+      if (context.io) context.io.emit('new_notice', notice);
+      return notice;
     }
   }
 };

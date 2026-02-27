@@ -48,6 +48,13 @@ const typeDefs = `#graphql
     totalHired: Int
   }
 
+  type Notice {
+    id: ID!
+    title: String!
+    content: String!
+    date_posted: String!
+  }
+
   type Query {
     getJobs(category: String, limit: Int, offset: Int): [Job]
     getJob(id: ID!): Job
@@ -56,6 +63,7 @@ const typeDefs = `#graphql
     getCompanyReviews(companyId: ID!): [Review]
     getStudent(id: ID!): Student
     getAdminAnalytics: Analytics
+    getNotices: [Notice]
   }
 
   type Mutation {
@@ -65,6 +73,7 @@ const typeDefs = `#graphql
     scheduleInterview(applicationId: ID!, interview_date: String!, meeting_link: String!): Interview
     addReview(companyId: ID!, studentId: ID!, rating: Int!, comment: String): Review
     updateStudentProfile(id: ID!, bio: String, skills: String, education: String, projects: String, portfolio_link: String): Student
+    createNotice(title: String!, content: String!): Notice
   }
 `;
 

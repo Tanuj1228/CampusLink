@@ -14,34 +14,45 @@
         </div>
     </nav>
     
-    <div class="container" style="flex-grow: 1; max-width: 1400px;">
-        <h2 style="color: #343a40; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">University Placement Cell Overview</h2>
+    <div class="container" style="flex-grow: 1; max-width: 1400px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
         
-        <div id="analytics-cards" style="display: flex; gap: 20px; margin-bottom: 30px;">
-            <div style="flex: 1; background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #0d6efd; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h4 style="margin: 0; color: #6c757d;">Total Registered Students</h4>
-                <h2 style="margin: 10px 0 0 0; color: #343a40;" id="stat-students">0</h2>
+        <div>
+            <h2 style="color: #343a40; border-bottom: 2px solid #dee2e6; padding-bottom: 10px;">Placement Overview</h2>
+            
+            <div id="analytics-cards" style="display: flex; gap: 20px; margin-bottom: 30px;">
+                <div style="flex: 1; background: #fff; padding: 15px; border-radius: 8px; border-left: 5px solid #0d6efd; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h5 style="margin: 0; color: #6c757d;">Students</h5>
+                    <h2 style="margin: 5px 0 0 0; color: #343a40;" id="stat-students">0</h2>
+                </div>
+                <div style="flex: 1; background: #fff; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h5 style="margin: 0; color: #6c757d;">Jobs</h5>
+                    <h2 style="margin: 5px 0 0 0; color: #343a40;" id="stat-jobs">0</h2>
+                </div>
+                <div style="flex: 1; background: #fff; padding: 15px; border-radius: 8px; border-left: 5px solid #17a2b8; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h5 style="margin: 0; color: #6c757d;">Apps</h5>
+                    <h2 style="margin: 5px 0 0 0; color: #343a40;" id="stat-apps">0</h2>
+                </div>
+                <div style="flex: 1; background: #fff; padding: 15px; border-radius: 8px; border-left: 5px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h5 style="margin: 0; color: #6c757d;">Hired</h5>
+                    <h2 style="margin: 5px 0 0 0; color: #343a40;" id="stat-hired">0</h2>
+                </div>
             </div>
-            <div style="flex: 1; background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h4 style="margin: 0; color: #6c757d;">Total Jobs Posted</h4>
-                <h2 style="margin: 10px 0 0 0; color: #343a40;" id="stat-jobs">0</h2>
-            </div>
-            <div style="flex: 1; background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #17a2b8; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h4 style="margin: 0; color: #6c757d;">Total Applications</h4>
-                <h2 style="margin: 10px 0 0 0; color: #343a40;" id="stat-apps">0</h2>
-            </div>
-            <div style="flex: 1; background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h4 style="margin: 0; color: #6c757d;">Total Hired</h4>
-                <h2 style="margin: 10px 0 0 0; color: #343a40;" id="stat-hired">0</h2>
+
+            <button class="btn-primary" onclick="fetchAllJobs()" style="background-color: #343a40; margin-bottom: 20px;">Load Jobs Data</button>
+            <div id="admin-dashboard-content" style="display: grid; grid-template-columns: 1fr; gap: 20px;"></div>
+        </div>
+
+        <div>
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 20px;">
+                <h3 style="margin-top: 0;">Post Campus Notice</h3>
+                <form id="noticeForm">
+                    <input type="text" id="notice-title" placeholder="Notice Title (e.g., TCS Drive Update)" required>
+                    <textarea id="notice-content" rows="6" placeholder="Write announcement details here..." required></textarea>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Broadcast Notice</button>
+                </form>
             </div>
         </div>
 
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <button class="btn-primary" onclick="fetchAllJobs()" style="background-color: #343a40;">Load All Platform Jobs</button>
-        </div>
-
-        <div id="admin-dashboard-content" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
-            </div>
     </div>
 
     <script>
@@ -57,7 +68,6 @@
             const query = `query { getAdminAnalytics { totalStudents totalJobs totalApplications totalHired } }`;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
-            
             if (result.data && result.data.getAdminAnalytics) {
                 document.getElementById('stat-students').innerText = result.data.getAdminAnalytics.totalStudents;
                 document.getElementById('stat-jobs').innerText = result.data.getAdminAnalytics.totalJobs;
@@ -67,74 +77,47 @@
         }
 
         async function fetchAllJobs() {
-            const query = `
-                query {
-                    getJobs(limit: 100, offset: 0) {
-                        id
-                        title
-                        category
-                        companyId
-                    }
-                }
-            `;
+            const query = `query { getJobs(limit: 100, offset: 0) { id title category companyId } }`;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
-            
             const contentDiv = document.getElementById('admin-dashboard-content');
             contentDiv.innerHTML = '';
-            
             for (const job of result.data.getJobs) {
                 const applicantsHtml = await fetchApplicants(job.id);
                 contentDiv.innerHTML += `
-                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                            <h3 style="margin-top: 0; color: #343a40;">${job.title} <span style="font-size: 14px; color: #6c757d;">(ID: ${job.id})</span></h3>
-                            <a href="/api/export/applicants/${job.id}" class="btn-outline" style="padding: 4px 10px; font-size: 12px; border-color: #28a745; color: #28a745;">Download CSV</a>
+                    <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <h4 style="margin: 0; color: #343a40;">${job.title}</h4>
+                            <a href="/api/export/applicants/${job.id}" class="btn-outline" style="padding: 2px 10px; font-size: 12px;">Export CSV</a>
                         </div>
-                        <p style="margin: 5px 0 15px 0; color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category} | <strong>Company ID:</strong> ${job.companyId}</p>
-                        <h5 style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Tracked Applications</h5>
-                        <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                            ${applicantsHtml || '<p style="color:#6c757d; font-size:14px; margin:0;">No applications on record.</p>'}
-                        </div>
+                        <p style="margin: 5px 0 10px 0; font-size: 12px; color: #6c757d;">Cat: ${job.category}</p>
+                        <div style="max-height: 200px; overflow-y: auto;">${applicantsHtml || '<p style="font-size:12px;">No applications.</p>'}</div>
                     </div>
                 `;
             }
         }
 
         async function fetchApplicants(jobId) {
-            const query = `
-                query {
-                    getApplicants(jobId: "${jobId}") {
-                        id
-                        status
-                        resume_link
-                        student { name email }
-                    }
-                }
-            `;
+            const query = `query { getApplicants(jobId: "${jobId}") { id status resume_link student { name email } } }`;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             if (!result.data.getApplicants || !result.data.getApplicants.length) return '';
-            
-            return result.data.getApplicants.map(app => {
-                let statusColor = '#6c757d';
-                if(app.status === 'Hired') statusColor = '#28a745';
-                if(app.status === 'Rejected') statusColor = '#dc3545';
-                if(app.status === 'Interviewing') statusColor = '#ffc107';
-                if(app.status === 'Shortlisted') statusColor = '#17a2b8';
-
-                return `
-                <div style="background: #f8f9fa; padding: 12px; border-left: 4px solid ${statusColor}; margin-bottom: 10px; border-radius: 4px; font-size: 14px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <strong>${app.student.name}</strong>
-                        <span style="background: ${statusColor}; color: ${app.status === 'Interviewing' ? '#000' : '#fff'}; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">${app.status}</span>
-                    </div>
-                    <div style="color: #495057; margin-bottom: 5px;">✉️ ${app.student.email}</div>
-                    <a href="${app.resume_link}" target="_blank" style="color: #0d6efd; text-decoration: none;">📄 View Drive Resume</a>
+            return result.data.getApplicants.map(app => `
+                <div style="background: #f8f9fa; padding: 10px; margin-bottom: 5px; font-size: 13px;">
+                    <strong>${app.student.name}</strong> - <span>${app.status}</span>
                 </div>
-                `;
-            }).join('');
+            `).join('');
         }
+
+        document.getElementById('noticeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('notice-title').value;
+            const content = document.getElementById('notice-content').value.replace(/\n/g, '\\n');
+            const query = `mutation { createNotice(title: "${title}", content: "${content}") { id } }`;
+            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            alert('Notice broadcasted successfully!');
+            e.target.reset();
+        });
 
         fetchAnalytics();
         fetchAllJobs();
