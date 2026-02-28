@@ -7,8 +7,12 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const resolvers = {
   Query: {
     getJobs: async (_, { category, limit = 10, offset = 0 }) => {
-      const where = category ? { category } : {};
+      const where = { status: 'Approved' };
+      if (category) where.category = category;
       return await Job.findAll({ where, limit, offset });
+    },
+    getPendingJobs: async () => {
+      return await Job.findAll({ where: { status: 'Pending' } });
     },
     getJob: async (_, { id }) => {
       return await Job.findByPk(id);
@@ -39,7 +43,7 @@ const resolvers = {
     },
     getAdminAnalytics: async () => {
       const totalStudents = await Student.count();
-      const totalJobs = await Job.count();
+      const totalJobs = await Job.count({ where: { status: 'Approved' } });
       const totalApplications = await Application.count();
       const totalHired = await Application.count({ where: { status: 'Hired' } });
       return { totalStudents, totalJobs, totalApplications, totalHired };
@@ -49,9 +53,18 @@ const resolvers = {
     }
   },
   Mutation: {
-    createJob: async (_, { title, description, category, jd_link, companyId }, context) => {
-      const job = await Job.create({ title, description, category, jd_link, companyId });
-      if (context.io) context.io.emit('new_job_alert', job);
+    createJob: async (_, { title, description, category, jd_link, companyId }) => {
+      return await Job.create({ title, description, category, jd_link, companyId, status: 'Pending' });
+    },
+    updateJobStatus: async (_, { jobId, status }, context) => {
+      const job = await Job.findByPk(jobId);
+      if (job) {
+        job.status = status;
+        await job.save();
+        if (status === 'Approved' && context.io) {
+          context.io.emit('new_job_alert', job);
+        }
+      }
       return job;
     },
     applyForJob: async (_, { jobId, studentId, resume_link }) => {

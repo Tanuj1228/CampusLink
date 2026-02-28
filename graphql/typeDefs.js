@@ -5,6 +5,7 @@ const typeDefs = `#graphql
     description: String!
     category: String!
     jd_link: String!
+    status: String!
     companyId: ID!
   }
 
@@ -57,6 +58,7 @@ const typeDefs = `#graphql
 
   type Query {
     getJobs(category: String, limit: Int, offset: Int): [Job]
+    getPendingJobs: [Job]
     getJob(id: ID!): Job
     getCompanyJobs(companyId: ID!): [Job]
     getApplicants(jobId: ID!): [Application]
@@ -68,6 +70,7 @@ const typeDefs = `#graphql
 
   type Mutation {
     createJob(title: String!, description: String!, category: String!, jd_link: String!, companyId: ID!): Job
+    updateJobStatus(jobId: ID!, status: String!): Job
     applyForJob(jobId: ID!, studentId: ID!, resume_link: String!): Application
     updateApplicationStatus(applicationId: ID!, status: String!): Application
     scheduleInterview(applicationId: ID!, interview_date: String!, meeting_link: String!): Interview
