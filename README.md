@@ -49,14 +49,17 @@ A comprehensive job portal and campus placement management system built with Nod
 ```bash
 git clone <repository_url>
 cd CampusLink
+```
 
-
-2. Install Dependencies
-Bash
+### 2. Install Dependencies
+```bash
 npm install
-3. Configure Environment Variables
+```
+
+### 3. Configure Environment Variables
 Create a .env file in the root directory and add the following configuration. Replace the placeholder values with your actual credentials:
 
+```bash
 Code snippet
 PORT=3000
 DB_HOST=localhost
@@ -67,17 +70,23 @@ DB_DIALECT=mysql
 JWT_SECRET=your_jwt_secret_key
 SENDGRID_API_KEY=your_actual_api_key
 SENDGRID_SENDER_EMAIL=your_actual_email@example.com
-4. Database Setup
-Open MySQL Workbench or your MySQL Command Line Client and execute the following query to create the database:
+```
 
-SQL
+### 4. Database Setup
+Open MySQL Workbench or your MySQL Command Line Client and execute the following query to create the database:
+**SQL**
+```bash
 CREATE DATABASE campuslink_db;
-5. Start the Application
+```
+
+### 5. Start the Application
 Run the development server. Sequelize will automatically sync models and create the necessary tables on the first run.
 
-Bash
+```bash
 npm run dev
-6. Access the Application
+```
+
+### 6. Access the Application
 Open your web browser and navigate to:
 
 Plaintext
