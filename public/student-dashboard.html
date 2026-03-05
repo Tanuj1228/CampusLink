@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | Job Portal</title>
+    <title>Student Dashboard | CampusLink</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
     <nav class="navbar">
-        <a href="index.html" class="logo">SupersetClone</a>
+        <a href="index.html" class="logo">CampusLink</a>
         <div class="nav-links">
             <button class="btn-outline" onclick="window.location.href='/student-profile.html'" style="margin-right: 15px;">My Profile</button>
             <button class="btn-primary" onclick="logout()" style="background: #dc3545;">Logout</button>
@@ -49,6 +49,7 @@
         
         let currentPage = 0;
         const limit = 5;
+        let myApplications = [];
 
         function logout() {
             localStorage.clear();
@@ -96,7 +97,18 @@
             });
         }
 
+        async function fetchMyApplications() {
+            const query = `query { getStudentApplications(studentId: "${studentId}") { id status jobId } }`;
+            const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+            const result = await response.json();
+            if(result.data && result.data.getStudentApplications) {
+                myApplications = result.data.getStudentApplications;
+            }
+        }
+
         async function fetchJobs() {
+            await fetchMyApplications();
+            
             const category = document.getElementById('categoryFilter').value;
             const queryArgs = `(limit: ${limit}, offset: ${currentPage * limit}${category ? `, category: "${category}"` : ''})`;
             
@@ -111,6 +123,33 @@
             }
 
             result.data.getJobs.forEach(job => {
+                const appliedApp = myApplications.find(app => app.jobId === job.id);
+                let actionSection = '';
+
+                if (appliedApp) {
+                    let statusColor = '#ffc107'; 
+                    let textColor = '#000';
+                    if(appliedApp.status === 'Shortlisted') { statusColor = '#17a2b8'; textColor = '#fff'; }
+                    if(appliedApp.status === 'Interviewing') { statusColor = '#0d6efd'; textColor = '#fff'; }
+                    if(appliedApp.status === 'Hired') { statusColor = '#28a745'; textColor = '#fff'; }
+                    if(appliedApp.status === 'Rejected') { statusColor = '#dc3545'; textColor = '#fff'; }
+
+                    actionSection = `
+                        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; border: 1px solid #dee2e6;">
+                            <span style="font-weight: bold; margin-right: 10px;">Application Status:</span>
+                            <span style="background: ${statusColor}; color: ${textColor}; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: bold;">${appliedApp.status}</span>
+                        </div>
+                    `;
+                } else {
+                    actionSection = `
+                        <input type="url" id="resume-${job.id}" placeholder="Google Drive Resume Link" style="margin-top: 10px; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <button class="btn-primary" onclick="applyForJob(${job.id})">Apply Now</button>
+                            <a href="${job.jd_link}" target="_blank" style="color: #0d6efd; text-decoration: none; font-weight: bold;">📄 View JD</a>
+                        </div>
+                    `;
+                }
+
                 jobListDiv.innerHTML += `
                     <div style="background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
                         <div style="display:flex; justify-content:space-between;">
@@ -119,11 +158,7 @@
                         </div>
                         <p style="color: #6c757d; font-size: 14px;"><strong>Category:</strong> ${job.category}</p>
                         <p>${job.description}</p>
-                        <input type="url" id="resume-${job.id}" placeholder="Google Drive Resume Link" style="margin-top: 10px;">
-                        <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
-                            <button class="btn-primary" onclick="applyForJob(${job.id})">Apply Now</button>
-                            <a href="${job.jd_link}" target="_blank" style="color: #0d6efd; text-decoration: none; font-weight: bold;">📄 View JD</a>
-                        </div>
+                        ${actionSection}
                     </div>
                 `;
             });
@@ -139,6 +174,7 @@
             const query = `mutation { applyForJob(jobId: "${jobId}", studentId: "${studentId}", resume_link: "${resume_link}") { id } }`;
             await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             alert('Applied successfully!');
+            fetchJobs();
         }
 
         async function rateCompany(companyId) {

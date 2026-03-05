@@ -34,6 +34,12 @@ const resolvers = {
         interview: app.Interview
       }));
     },
+    getStudentApplications: async (_, { studentId }) => {
+      return await Application.findAll({
+        where: { studentId },
+        include: [{ model: Job }]
+      });
+    },
     getCompanyReviews: async (_, { companyId }) => {
        const reviews = await Review.findAll({ where: { companyId }, include: [{ model: Student }] });
        return reviews.map(r => ({ id: r.id, rating: r.rating, comment: r.comment, student: r.Student }));
@@ -88,7 +94,19 @@ const resolvers = {
     },
     scheduleInterview: async (_, { applicationId, interview_date, meeting_link }) => {
       const interview = await Interview.create({ applicationId, interview_date, meeting_link });
-      await Application.update({ status: 'Interviewing' }, { where: { id: applicationId } });
+      const application = await Application.findByPk(applicationId, { include: [Student, Job] });
+      application.status = 'Interviewing';
+      await application.save();
+
+      if (process.env.SENDGRID_API_KEY) {
+        const msg = {
+            to: application.Student.email,
+            from: process.env.SENDGRID_SENDER_EMAIL, 
+            subject: `Interview Scheduled: ${application.Job.title}`,
+            text: `Good news! An interview has been scheduled for your application to ${application.Job.title}.\n\nDate & Time: ${interview_date}\nMeeting Link: ${meeting_link}`,
+        };
+        try { await sgMail.send(msg); } catch (error) { console.error('SendGrid Error:', error); }
+      }
       return interview;
     },
     addReview: async (_, { companyId, studentId, rating, comment }) => {

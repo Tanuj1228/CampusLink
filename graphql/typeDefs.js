@@ -26,6 +26,7 @@ const typeDefs = `#graphql
     resume_link: String!
     jobId: ID!
     student: Student
+    job: Job
     interview: Interview
   }
 
@@ -62,6 +63,7 @@ const typeDefs = `#graphql
     getJob(id: ID!): Job
     getCompanyJobs(companyId: ID!): [Job]
     getApplicants(jobId: ID!): [Application]
+    getStudentApplications(studentId: ID!): [Application]
     getCompanyReviews(companyId: ID!): [Review]
     getStudent(id: ID!): Student
     getAdminAnalytics: Analytics
