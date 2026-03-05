@@ -3,36 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Dashboard | Job Portal</title>
+    <title>Company Dashboard | CampusLink</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .modal-content input { margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        .modal-content label { font-weight: bold; display: block; margin-bottom: 5px; color: #343a40; }
+    </style>
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
     <nav class="navbar">
-        <a href="index.html" class="logo">SupersetClone</a>
+        <a href="index.html" class="logo">CampusLink Company</a>
         <div class="nav-links">
-            <button class="btn-outline" onclick="window.location.href='/company-reviews.html'" style="margin-right: 15px;">View My Reviews</button>
             <button class="btn-primary" onclick="logout()" style="background: #dc3545;">Logout</button>
         </div>
     </nav>
     
     <div class="container" style="flex-grow: 1; display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
-        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-            <h3 style="margin-top: 0;">Post a New Job</h3>
-            <form id="jobForm">
-                <input type="text" id="title" placeholder="Job Title" required>
-                <textarea id="description" rows="4" placeholder="Job Description" required></textarea>
-                <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required>
-                <input type="url" id="jd_link" placeholder="Google Drive JD Link" required>
-                <button type="submit" class="btn-primary" style="width: 100%;">Post Job</button>
-            </form>
+        
+        <div>
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0;">Post a New Job</h3>
+                <form id="jobForm">
+                    <input type="text" id="title" placeholder="Job Title" required style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
+                    <textarea id="description" rows="4" placeholder="Job Description" required style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
+                    <input type="text" id="category" placeholder="Category (e.g., IT, Finance)" required style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
+                    <input type="url" id="jd_link" placeholder="Detailed JD Link (Google Drive/Notion)" required style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
+                    <button type="submit" class="btn-primary" style="width: 100%;">Submit for Approval</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px;">My Posted Jobs</h3>
+            <div id="company-jobs-list"></div>
         </div>
 
-        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0;">My Posted Jobs & Applicants</h3>
-                <button class="btn-outline" onclick="fetchMyJobs()">Refresh</button>
+        <div>
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-height: 400px;">
+                <h3 style="margin-top: 0; border-bottom: 2px solid #0d6efd; padding-bottom: 10px;">Applicant Tracking (ATS)</h3>
+                <p id="select-prompt" style="color: #6c757d;">Select a job from the left panel to view applicants.</p>
+                <div id="applicants-list" style="max-height: 600px; overflow-y: auto;"></div>
             </div>
-            <div id="my-jobs-list"></div>
+        </div>
+
+    </div>
+
+    <div id="scheduleModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: #0d6efd; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">Schedule Interview</h3>
+            <input type="hidden" id="modal-app-id">
+            
+            <label>Date</label>
+            <input type="date" id="modal-date" required>
+            
+            <label>Time</label>
+            <input type="time" id="modal-time" required>
+            
+            <label>Meeting Link</label>
+            <input type="url" id="modal-link" placeholder="https://meet.google.com/..." required>
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-primary" onclick="submitSchedule()" style="flex: 1;">Send Invite</button>
+                <button class="btn-outline" onclick="closeModal()" style="flex: 1;">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -48,86 +87,150 @@
         document.getElementById('jobForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
+            const description = document.getElementById('description').value.replace(/\n/g, '\\n');
             const category = document.getElementById('category').value;
             const jd_link = document.getElementById('jd_link').value;
 
             const query = `mutation { createJob(title: "${title}", description: "${description}", category: "${category}", jd_link: "${jd_link}", companyId: "${companyId}") { id } }`;
             await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
-            alert('Job Posted Successfully!');
+            alert('Job submitted to Placement Cell for approval!');
             e.target.reset();
-            fetchMyJobs();
+            fetchCompanyJobs();
         });
 
-        async function fetchMyJobs() {
-            const query = `query { getCompanyJobs(companyId: "${companyId}") { id title category } }`;
+        async function fetchCompanyJobs() {
+            const query = `query { getCompanyJobs(companyId: "${companyId}") { id title status } }`;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
             
-            const jobsListDiv = document.getElementById('my-jobs-list');
-            jobsListDiv.innerHTML = '';
+            const listDiv = document.getElementById('company-jobs-list');
+            listDiv.innerHTML = '';
             
-            for (const job of result.data.getCompanyJobs) {
-                const applicantsHtml = await fetchApplicants(job.id);
-                jobsListDiv.innerHTML += `
-                    <div style="border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-                        <div style="display:flex; justify-content:space-between;">
-                            <h4 style="margin-top: 0; color: #0d6efd;">${job.title}</h4>
-                            <a href="/api/export/applicants/${job.id}" class="btn-outline" style="padding: 2px 10px; font-size:12px;">Export CSV</a>
+            if (!result.data.getCompanyJobs || result.data.getCompanyJobs.length === 0) {
+                listDiv.innerHTML = '<p style="color: #6c757d;">No jobs posted yet.</p>';
+                return;
+            }
+
+            result.data.getCompanyJobs.forEach(job => {
+                let statusColor = job.status === 'Approved' ? '#28a745' : '#ffc107';
+                listDiv.innerHTML += `
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer;" onclick="fetchApplicants(${job.id}, '${job.title}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin: 0; color: #343a40;">${job.title}</h4>
+                            <span style="font-size: 12px; font-weight: bold; color: ${statusColor};">${job.status}</span>
                         </div>
-                        <h5 style="margin-bottom: 10px; color: #495057;">Applicants:</h5>
-                        ${applicantsHtml || '<p style="color:#6c757d; font-size:14px; margin:0;">No applicants yet.</p>'}
+                        <p style="margin: 5px 0 0 0; font-size: 13px; color: #0d6efd;">Click to view applicants →</p>
                     </div>
                 `;
-            }
+            });
         }
 
-        async function fetchApplicants(jobId) {
-            const query = `query { getApplicants(jobId: "${jobId}") { id status resume_link student { name email } interview { interview_date meeting_link } } }`;
+        async function fetchApplicants(jobId, jobTitle) {
+            document.getElementById('select-prompt').style.display = 'none';
+            const listDiv = document.getElementById('applicants-list');
+            listDiv.innerHTML = `<h4 style="margin-top: 0;">Applicants for: ${jobTitle}</h4><p>Loading...</p>`;
+
+            const query = `
+                query {
+                    getApplicants(jobId: "${jobId}") {
+                        id status resume_link
+                        student { name email skills portfolio_link }
+                    }
+                }
+            `;
             const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             const result = await response.json();
-            if (!result.data.getApplicants || !result.data.getApplicants.length) return '';
             
-            return result.data.getApplicants.map(app => `
-                <div style="background: #f8f9fa; padding: 10px; border-left: 3px solid #0d6efd; margin-bottom: 10px; border-radius: 3px;">
-                    <strong>${app.student.name}</strong> (${app.student.email})<br>
-                    <a href="${app.resume_link}" target="_blank" style="font-size:14px;">View Resume</a><br>
-                    
-                    <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
-                        <select id="status-${app.id}" onchange="updateStatus(${app.id})" style="margin-bottom:0; width:auto;">
-                            <option value="Pending" ${app.status==='Pending'?'selected':''}>Pending</option>
-                            <option value="Shortlisted" ${app.status==='Shortlisted'?'selected':''}>Shortlisted</option>
-                            <option value="Interviewing" ${app.status==='Interviewing'?'selected':''}>Interviewing</option>
-                            <option value="Hired" ${app.status==='Hired'?'selected':''}>Hired</option>
-                            <option value="Rejected" ${app.status==='Rejected'?'selected':''}>Rejected</option>
-                        </select>
-                        <button class="btn-outline" style="padding: 5px;" onclick="scheduleInterview(${app.id})">Schedule Interview</button>
+            listDiv.innerHTML = `<h4 style="margin-top: 0; margin-bottom: 15px;">Applicants for: <span style="color: #0d6efd;">${jobTitle}</span></h4>`;
+            
+            if (!result.data.getApplicants || result.data.getApplicants.length === 0) {
+                listDiv.innerHTML += '<p style="color: #6c757d;">No applications received yet.</p>';
+                return;
+            }
+
+            result.data.getApplicants.forEach(app => {
+                let statusBadge = '';
+                if(app.status === 'Pending') statusBadge = `<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Pending</span>`;
+                if(app.status === 'Shortlisted') statusBadge = `<span style="background: #17a2b8; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Shortlisted</span>`;
+                if(app.status === 'Interviewing') statusBadge = `<span style="background: #0d6efd; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Interviewing</span>`;
+                if(app.status === 'Hired') statusBadge = `<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Hired</span>`;
+                if(app.status === 'Rejected') statusBadge = `<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Rejected</span>`;
+
+                let actionButtons = `
+                    <button class="btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="updateStatus(${app.id}, 'Shortlisted', ${jobId}, '${jobTitle}')">Shortlist</button>
+                    <button class="btn-outline" style="padding: 4px 8px; font-size: 12px; border-color: #dc3545; color: #dc3545;" onclick="updateStatus(${app.id}, 'Rejected', ${jobId}, '${jobTitle}')">Reject</button>
+                    <button class="btn-outline" style="padding: 4px 8px; font-size: 12px; border-color: #28a745; color: #28a745;" onclick="updateStatus(${app.id}, 'Hired', ${jobId}, '${jobTitle}')">Hire</button>
+                `;
+
+                if(app.status === 'Shortlisted' || app.status === 'Pending') {
+                    actionButtons += `<button class="btn-primary" style="padding: 4px 8px; font-size: 12px; margin-left: 5px;" onclick="openScheduleModal(${app.id})">📅 Schedule Interview</button>`;
+                }
+
+                listDiv.innerHTML += `
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <strong style="font-size: 16px;">${app.student.name}</strong>
+                            ${statusBadge}
+                        </div>
+                        <p style="margin: 0 0 5px 0; font-size: 13px; color: #495057;">✉️ ${app.student.email}</p>
+                        <p style="margin: 0 0 5px 0; font-size: 13px; color: #495057;">🛠️ Skills: ${app.student.skills || 'N/A'}</p>
+                        
+                        <div style="margin: 10px 0; display: flex; gap: 15px;">
+                            <a href="${app.resume_link}" target="_blank" style="font-size: 13px; color: #0d6efd; font-weight: bold; text-decoration: none;">📄 View Resume</a>
+                            ${app.student.portfolio_link ? `<a href="${app.student.portfolio_link}" target="_blank" style="font-size: 13px; color: #0d6efd; font-weight: bold; text-decoration: none;">🌐 Portfolio/GitHub</a>` : ''}
+                        </div>
+
+                        <div style="margin-top: 15px; border-top: 1px solid #dee2e6; padding-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;">
+                            ${actionButtons}
+                        </div>
                     </div>
-                    ${app.interview ? `<div style="font-size:12px; margin-top:5px; color:green;">Interview: ${new Date(Number(app.interview.interview_date)).toLocaleString()} - <a href="${app.interview.meeting_link}">Join</a></div>` : ''}
-                </div>
-            `).join('');
+                `;
+            });
         }
 
-        async function updateStatus(applicationId) {
-            const status = document.getElementById(`status-${applicationId}`).value;
+        async function updateStatus(applicationId, status, jobId, jobTitle) {
             const query = `mutation { updateApplicationStatus(applicationId: "${applicationId}", status: "${status}") { id } }`;
             await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
-            alert('Status updated & email sent!');
+            fetchApplicants(jobId, jobTitle);
         }
 
-        async function scheduleInterview(applicationId) {
-            const dateStr = prompt("Enter interview date (YYYY-MM-DD HH:MM):");
-            const link = prompt("Enter meeting link:");
-            if(!dateStr || !link) return;
+        // Modal Logic
+        function openScheduleModal(appId) {
+            document.getElementById('modal-app-id').value = appId;
+            document.getElementById('scheduleModal').style.display = 'flex';
+        }
 
-            const date = new Date(dateStr).getTime().toString();
-            const query = `mutation { scheduleInterview(applicationId: "${applicationId}", interview_date: "${date}", meeting_link: "${link}") { id } }`;
+        function closeModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+            document.getElementById('modal-date').value = '';
+            document.getElementById('modal-time').value = '';
+            document.getElementById('modal-link').value = '';
+        }
+
+        async function submitSchedule() {
+            const appId = document.getElementById('modal-app-id').value;
+            const date = document.getElementById('modal-date').value;
+            const time = document.getElementById('modal-time').value;
+            const link = document.getElementById('modal-link').value;
+
+            if(!date || !time || !link) {
+                alert("Please fill in all details.");
+                return;
+            }
+
+            const formattedDateTime = `${date} at ${time}`;
+            
+            const query = `mutation { scheduleInterview(applicationId: "${appId}", interview_date: "${formattedDateTime}", meeting_link: "${link}") { id } }`;
             await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
-            alert('Interview scheduled!');
-            fetchMyJobs();
+            
+            alert('Interview scheduled! Email sent to the applicant.');
+            closeModal();
+            
+            // Re-fetch to update status to Interviewing (Tricky part: we don't have jobId/jobTitle in this scope without globals, so we reload the page or require manual refresh for now. Simple reload works.)
+            window.location.reload(); 
         }
 
-        fetchMyJobs();
+        fetchCompanyJobs();
     </script>
 </body>
 </html>

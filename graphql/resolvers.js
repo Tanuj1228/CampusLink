@@ -102,8 +102,24 @@ const resolvers = {
         const msg = {
             to: application.Student.email,
             from: process.env.SENDGRID_SENDER_EMAIL, 
-            subject: `Interview Scheduled: ${application.Job.title}`,
-            text: `Good news! An interview has been scheduled for your application to ${application.Job.title}.\n\nDate & Time: ${interview_date}\nMeeting Link: ${meeting_link}`,
+            subject: `Interview Invitation: ${application.Job.title} at CampusLink`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;">
+                <div style="text-align: center; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 style="color: #0d6efd; margin: 0;">CampusLink</h2>
+                    <p style="color: #6c757d; margin: 5px 0 0 0;">Interview Invitation</p>
+                </div>
+                <p>Dear <strong>${application.Student.name}</strong>,</p>
+                <p>Congratulations! Your application for the <strong>${application.Job.title}</strong> role has been shortlisted.</p>
+                <p>We would like to invite you for an interview. Please find the scheduled details below:</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #0d6efd;">
+                    <p style="margin: 0 0 10px 0;">📅 <strong>Date & Time:</strong> ${interview_date}</p>
+                    <p style="margin: 0;">🔗 <strong>Meeting Link:</strong> <a href="${meeting_link}" target="_blank" style="color: #0d6efd; font-weight: bold;">Join Interview Here</a></p>
+                </div>
+                <p>Please ensure you join the meeting 5 minutes early and test your audio/video setup beforehand.</p>
+                <p>Best regards,<br><strong>Placement Cell / Hiring Team</strong></p>
+              </div>
+            `
         };
         try { await sgMail.send(msg); } catch (error) { console.error('SendGrid Error:', error); }
       }
