@@ -252,14 +252,26 @@
                 return;
             }
 
-            const formattedDateTime = `${date} at ${time}`;
+            const formattedDateTime = new Date(`${date}T${time}`).toISOString();
             
             const query = `mutation { scheduleInterview(applicationId: "${appId}", interview_date: "${formattedDateTime}", meeting_link: "${link}") { id } }`;
-            await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
             
-            alert('Interview scheduled! Email sent to the applicant. Check server console for SendGrid logs if it did not arrive.');
-            closeModal();
-            fetchApplicants(currentJobId, currentJobTitle);
+            try {
+                const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+                const result = await response.json();
+
+                if (result.errors) {
+                    alert('Error scheduling interview: ' + result.errors[0].message);
+                    console.error(result.errors);
+                } else {
+                    alert('Interview scheduled! Email sent to the applicant.');
+                    closeModal();
+                    fetchApplicants(currentJobId, currentJobTitle);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                alert('An error occurred. Check the console.');
+            }
         }
 
         fetchCompanyJobs();

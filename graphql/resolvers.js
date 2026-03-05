@@ -103,10 +103,16 @@ const resolvers = {
       await application.save();
 
       if (process.env.SENDGRID_API_KEY) {
+        const readableDate = new Date(interview_date).toLocaleString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+        });
+
         const msg = {
             to: application.Student.email,
             from: process.env.SENDGRID_SENDER_EMAIL, 
             subject: `Interview Invitation: ${application.Job.title} at CampusLink`,
+            text: `Congratulations! Your application for the ${application.Job.title} role has been shortlisted. Your interview is scheduled for ${readableDate}. Meeting Link: ${meeting_link}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;">
                 <div style="text-align: center; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; margin-bottom: 20px;">
@@ -117,7 +123,7 @@ const resolvers = {
                 <p>Congratulations! Your application for the <strong>${application.Job.title}</strong> role has been shortlisted.</p>
                 <p>We would like to invite you for an interview. Please find the scheduled details below:</p>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #0d6efd;">
-                    <p style="margin: 0 0 10px 0;">📅 <strong>Date & Time:</strong> ${interview_date}</p>
+                    <p style="margin: 0 0 10px 0;">📅 <strong>Date & Time:</strong> ${readableDate}</p>
                     <p style="margin: 0;">🔗 <strong>Meeting Link:</strong> <a href="${meeting_link}" target="_blank" style="color: #0d6efd; font-weight: bold;">Join Interview Here</a></p>
                 </div>
                 <p>Please ensure you join the meeting 5 minutes early and test your audio/video setup beforehand.</p>
