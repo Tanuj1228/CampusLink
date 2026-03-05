@@ -88,7 +88,11 @@ const resolvers = {
             subject: `Application Update: ${application.Job.title}`,
             text: `Your application status has been updated to: ${status}`,
         };
-        try { await sgMail.send(msg); } catch (error) { console.error('SendGrid Error:', error); }
+        try { 
+          await sgMail.send(msg); 
+        } catch (error) { 
+          console.error('SendGrid Error:', error.response ? error.response.body : error); 
+        }
       }
       return application;
     },
@@ -121,7 +125,14 @@ const resolvers = {
               </div>
             `
         };
-        try { await sgMail.send(msg); } catch (error) { console.error('SendGrid Error:', error); }
+        try { 
+          await sgMail.send(msg); 
+          console.log('Interview email sent to:', application.Student.email);
+        } catch (error) { 
+          console.error('SendGrid Error:', error.response ? error.response.body : error); 
+        }
+      } else {
+        console.warn('SENDGRID_API_KEY is not configured in .env file');
       }
       return interview;
     },
