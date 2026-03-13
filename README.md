@@ -2,7 +2,7 @@
 
 A comprehensive job portal and campus placement management system built with Node.js, GraphQL, MySQL, and Vanilla JS. It facilitates seamless interactions between Students, Companies, and University Admins (Placement Cell).
 
-## 🚀 Tech Stack
+## Tech Stack
 * **Backend:** Node.js, Express.js, Apollo GraphQL, Sequelize (MySQL)
 * **Frontend:** HTML, CSS, Vanilla JavaScript
 * **Real-time Communication:** Socket.io
@@ -10,9 +10,9 @@ A comprehensive job portal and campus placement management system built with Nod
 * **Authentication:** JWT (JSON Web Tokens), bcryptjs
 * **Data Export:** json2csv
 
-## ✨ Features
+## Features
 
-### 🧑‍🎓 Student Module
+### Student Module
 * **Authentication:** Secure Registration and Login.
 * **Student Dashboard:** View all posted jobs with pagination.
 * **Job Search & Filter:** Filter jobs by category (e.g., IT, Finance).
@@ -21,7 +21,7 @@ A comprehensive job portal and campus placement management system built with Nod
 * **Company Reviews:** Rate and review companies post-interview.
 * **Profile Builder:** Create and update a personal portfolio, including bio, skills, education, projects, and GitHub links.
 
-### 🏢 Company Module
+### Company Module
 * **Authentication:** Secure Registration and Login.
 * **Job Management:** Post new jobs with title, description, category, and JD link.
 * **Applicant Tracking:** View all students who applied to specific jobs along with their profiles and resumes.
@@ -31,14 +31,14 @@ A comprehensive job portal and campus placement management system built with Nod
 * **CSV Export:** Download a CSV file of all applicants for a specific job for offline processing.
 * **Reviews Dashboard:** View ratings and feedback submitted by students.
 
-### 🛡️ Admin Module (Placement Cell)
+### Admin Module (Placement Cell)
 * **Authentication:** Secure Registration and Login.
 * **Analytics Dashboard:** View platform-wide metrics including total registered students, jobs posted, total applications, and total hired count.
 * **Platform Overview:** Load and monitor all platform jobs and track the application lifecycle for every student across all companies.
 * **Data Export:** Download applicant CSV data for any job on the platform.
 * **Notice Board Broadcast:** Create and broadcast campus announcements that appear instantly on the student dashboard.
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 * [Node.js](https://nodejs.org/) installed
@@ -89,5 +89,4 @@ npm run dev
 ### 6. Access the Application
 Open your web browser and navigate to:
 
-Plaintext
 http://localhost:3000
