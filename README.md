@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logowobg (1).png" alt="CampusLink Logo" width="200"/>
+</p>
+
 # CampusLink - University Placement Job Portal
 
 A comprehensive job portal and campus placement management system built with Node.js, GraphQL, MySQL, and Vanilla JS. It facilitates seamless interactions between Students, Companies, and University Admins (Placement Cell).
