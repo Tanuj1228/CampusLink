@@ -94,3 +94,26 @@ npm run dev
 Open your web browser and navigate to:
 
 http://localhost:3000
+
+## 7. Testing
+
+Backend testing has been implemented using Jest and SuperTest.
+
+### Run Tests
+
+```bash
+npm test
+```
+
+### Testing Coverage
+
+* Server response validation
+* Student registration API testing
+* Database connection verification through Sequelize
+
+### Notes
+
+* Tests run in test environment using cross-env
+* Test data is automatically cleaned after execution
+* Backend server does not auto-start during tests
+
