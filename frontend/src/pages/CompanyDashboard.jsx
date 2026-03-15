@@ -165,11 +165,9 @@ export default function CompanyDashboard() {
         </div>
       </nav>
 
-      <div className="container" style={{flexGrow: 1, display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px'}}>
-        {/* Left Panel */}
+      <div className="container company-dashboard-grid">        {/* Left Panel */}
         <div>
-          <div style={{background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #dee2e6', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'}}>
-            <h3 style={{marginTop: 0}}>Post a New Job</h3>
+        <div className="dashboard-card">            <h3 style={{marginTop: 0}}>Post a New Job</h3>
             <form onSubmit={handleJobFormSubmit}>
               <input 
                 name="title"
@@ -214,14 +212,11 @@ export default function CompanyDashboard() {
           <h3 style={{marginTop: '30px', borderBottom: '2px solid #0d6efd', paddingBottom: '10px'}}>
             My Posted Jobs
           </h3>
-          <div style={{maxHeight: '300px', overflowY: 'auto'}}>
-            {companyJobs.length === 0 ? (
+          <div className="scroll-box">            {companyJobs.length === 0 ? (
               <p style={{color: '#6c757d'}}>No jobs posted yet.</p>
             ) : (
               companyJobs.map(job => (
-                <div 
-                  key={job.id}
-                  style={{background: '#f8f9fa', border: '1px solid #dee2e6', padding: '15px', borderRadius: '8px', marginBottom: '10px', cursor: 'pointer'}}
+                <div key={job.id} className="job-item"
                   onClick={() => fetchApplicants(job.id, job.title)}
                 >
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -241,13 +236,11 @@ export default function CompanyDashboard() {
           <h3 style={{marginTop: '30px', borderBottom: '2px solid #ffc107', paddingBottom: '10px'}}>
             Student Reviews
           </h3>
-          <div style={{maxHeight: '300px', overflowY: 'auto'}}>
-            {reviews.length === 0 ? (
+          <div className="scroll-box">            {reviews.length === 0 ? (
               <p style={{color: '#6c757d', fontSize: '14px'}}>No reviews yet.</p>
             ) : (
               reviews.map(review => (
-                <div key={review.id} style={{background: '#f8f9fa', border: '1px solid #dee2e6', padding: '12px', borderRadius: '8px', marginBottom: '10px'}}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '5px'}}>
+<div key={review.id} className="review-item">                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '5px'}}>
                     <strong style={{color: '#343a40', fontSize: '14px'}}>
                       {review.student.name}
                     </strong>
@@ -264,8 +257,7 @@ export default function CompanyDashboard() {
 
         {/* Right Panel - ATS */}
         <div>
-          <div style={{background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #dee2e6', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', minHeight: '400px'}}>
-            <h3 style={{marginTop: 0, borderBottom: '2px solid #0d6efd', paddingBottom: '10px'}}>
+        <div className="dashboard-card ats-panel">            <h3 style={{marginTop: 0, borderBottom: '2px solid #0d6efd', paddingBottom: '10px'}}>
               Applicant Tracking (ATS)
             </h3>
             {!selectedJob ? (
@@ -284,8 +276,7 @@ export default function CompanyDashboard() {
                     </p>
                   ) : (
                     applicants.map(app => (
-                      <div key={app.id} style={{background: '#f8f9fa', border: '1px solid #dee2e6', padding: '15px', borderRadius: '8px', marginBottom: '15px'}}>
-                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+<div key={app.id} className="applicant-item">                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
                           <strong style={{fontSize: '16px'}}>
                             {app.student.name}
                           </strong>
@@ -370,73 +361,57 @@ export default function CompanyDashboard() {
       </div>
 
       {/* Schedule Interview Modal */}
-      {showModal && (
-        <div style={{
-          display: 'flex', 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%',
-          background: 'rgba(0,0,0,0.5)', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#fff', 
-            padding: '25px', 
-            borderRadius: '8px', 
-            width: '100%', 
-            maxWidth: '400px', 
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{marginTop: 0, color: '#0d6efd', borderBottom: '1px solid #dee2e6', paddingBottom: '10px'}}>
-              Schedule Interview
-            </h3>
-            
-            <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', color: '#343a40', marginTop: '10px'}}>
-              Date
-            </label>
-            <input 
-              type="date" 
-              value={modalData.date}
-              onChange={(e) => setModalData({...modalData, date: e.target.value})}
-              required
-            />
-            
-            <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', color: '#343a40', marginTop: '10px'}}>
-              Time
-            </label>
-            <input 
-              type="time" 
-              value={modalData.time}
-              onChange={(e) => setModalData({...modalData, time: e.target.value})}
-              required
-            />
-            
-            <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', color: '#343a40', marginTop: '10px'}}>
-              Meeting Link
-            </label>
-            <input 
-              type="url" 
-              placeholder="https://meet.google.com/..."
-              value={modalData.link}
-              onChange={(e) => setModalData({...modalData, link: e.target.value})}
-              required
-            />
-            
-            <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
-              <button className="btn-primary" onClick={submitSchedule} style={{flex: 1}}>
-                Send Invite
-              </button>
-              <button className="btn-outline" onClick={() => setShowModal(false)} style={{flex: 1}}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+{/* Schedule Interview Modal */}
+{showModal && (
+  <div className="modal-overlay">
+
+    <div className="modal-box">
+
+      <h3 className="modal-title">
+        Schedule Interview
+      </h3>
+
+      <label>Date</label>
+      <input
+        type="date"
+        value={modalData.date}
+        onChange={(e) => setModalData({...modalData, date: e.target.value})}
+      />
+
+      <label>Time</label>
+      <input
+        type="time"
+        value={modalData.time}
+        onChange={(e) => setModalData({...modalData, time: e.target.value})}
+      />
+
+      <label>Meeting Link</label>
+      <input
+        type="url"
+        placeholder="https://meet.google.com/..."
+        value={modalData.link}
+        onChange={(e) => setModalData({...modalData, link: e.target.value})}
+      />
+
+      <div className="modal-actions">
+
+        <button className="btn-primary" onClick={submitSchedule}>
+          Send Invite
+        </button>
+
+        <button
+          className="btn-outline"
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </>
   )
 }

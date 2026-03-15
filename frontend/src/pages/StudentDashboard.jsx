@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { graphql } from '../services/api'
 import io from 'socket.io-client'
 import { Link } from 'react-router-dom'
+import logo from '../assets/campuslink-logo.png'
 
 export default function StudentDashboard() {
   const { user, loading } = useAuth()
@@ -101,7 +102,9 @@ export default function StudentDashboard() {
       )}
       
       <nav className="navbar">
-        <Link to="/" className="logo">CampusLink</Link>
+      <Link to="/" className="logo">
+  <img src={logo} alt="CampusLink Logo" className="navbar-logo" />
+</Link>
         <div className="nav-links">
           <Link to="/student-profile" className="btn-outline" style={{marginRight: '15px'}}>
             My Profile

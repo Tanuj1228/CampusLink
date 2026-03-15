@@ -258,9 +258,274 @@ export default function Company() {
     return colors[status] || "#6c757d"
   }
 
+  // return (
+  //   <div>
+  //     {/* Your existing JSX UI can stay here */}
+  //   </div>
+  // )
   return (
-    <div>
-      {/* Your existing JSX UI can stay here */}
+
+    <div className="company-page">
+    
+      {/* NAVBAR */}
+    
+      <nav className="navbar company-navbar">
+    
+        <h3 className="logo">CampusLink Company</h3>
+    
+        <button className="btn-danger" onClick={logout}>
+          Logout
+        </button>
+    
+      </nav>
+    
+    
+      {/* MAIN LAYOUT */}
+    
+      <div className="container company-layout">
+    
+    
+        {/* LEFT PANEL */}
+    
+        <div className="company-main">
+    
+          {/* CREATE JOB */}
+    
+          <div className="job-form-card">
+    
+            <h2>Post New Job</h2>
+    
+            <form onSubmit={handleJobSubmit} className="job-form">
+    
+              <input
+                type="text"
+                placeholder="Job Title"
+                value={jobForm.title}
+                onChange={(e)=>setJobForm({...jobForm,title:e.target.value})}
+                required
+              />
+    
+              <textarea
+                rows="4"
+                placeholder="Job Description"
+                value={jobForm.description}
+                onChange={(e)=>setJobForm({...jobForm,description:e.target.value})}
+                required
+              />
+    
+              <input
+                type="text"
+                placeholder="Category"
+                value={jobForm.category}
+                onChange={(e)=>setJobForm({...jobForm,category:e.target.value})}
+                required
+              />
+    
+              <input
+                type="text"
+                placeholder="JD Link"
+                value={jobForm.jd_link}
+                onChange={(e)=>setJobForm({...jobForm,jd_link:e.target.value})}
+                required
+              />
+    
+              <button className="btn-primary">
+                Submit Job
+              </button>
+    
+            </form>
+    
+          </div>
+    
+    
+    
+          {/* COMPANY JOBS */}
+    
+          <div className="company-jobs">
+    
+            <h2>Your Jobs</h2>
+    
+            {companyJobs.length === 0 ? (
+              <p className="empty-text">No jobs posted yet.</p>
+            ) : (
+              companyJobs.map(job => (
+    
+                <div key={job.id} className="job-card">
+    
+                  <div className="job-card-header">
+    
+                    <h4>{job.title}</h4>
+    
+                    <span
+                      className="job-status"
+                      style={{background:getStatusColor(job.status)}}
+                    >
+                      {job.status}
+                    </span>
+    
+                  </div>
+    
+                  <button
+                    className="btn-outline"
+                    onClick={()=>fetchApplicants(job.id,job.title)}
+                  >
+                    View Applicants
+                  </button>
+    
+                </div>
+    
+              ))
+            )}
+    
+          </div>
+    
+    
+    
+          {/* APPLICANTS */}
+    
+          <div className="applicants-section">
+    
+            {showSelectPrompt && (
+              <p className="empty-text">
+                Select a job to view applicants
+              </p>
+            )}
+    
+            {selectedJob && (
+              <h3>
+                Applicants for {selectedJob.title}
+              </h3>
+            )}
+    
+            {applicants.map(app => (
+    
+              <div key={app.id} className="applicant-card">
+    
+                <h4>{app.student.name}</h4>
+    
+                <p>{app.student.email}</p>
+    
+                <p className="skills">
+                  Skills: {app.student.skills}
+                </p>
+    
+                <div className="applicant-actions">
+    
+                  <button
+                    className="btn-primary"
+                    onClick={()=>updateStatus(app.id,"Shortlisted")}
+                  >
+                    Shortlist
+                  </button>
+    
+                  <button
+                    className="btn-success"
+                    onClick={()=>openScheduleModal(app.id,selectedJob.id,selectedJob.title)}
+                  >
+                    Schedule Interview
+                  </button>
+    
+                  <button
+                    className="btn-danger"
+                    onClick={()=>updateStatus(app.id,"Rejected")}
+                  >
+                    Reject
+                  </button>
+    
+                </div>
+    
+              </div>
+    
+            ))}
+    
+          </div>
+    
+        </div>
+    
+    
+    
+        {/* RIGHT PANEL */}
+    
+        <div className="company-sidebar">
+    
+          <div className="reviews-card">
+    
+            <h3>Company Reviews</h3>
+    
+            {reviews.length === 0 ? (
+              <p className="empty-text">No reviews yet.</p>
+            ) : (
+              reviews.map(r => (
+    
+                <div key={r.id} className="review-card">
+    
+                  <strong>{r.student.name}</strong>
+    
+                  <p>⭐ {r.rating}/5</p>
+    
+                  <p>{r.comment}</p>
+    
+                </div>
+    
+              ))
+            )}
+    
+          </div>
+    
+        </div>
+    
+    
+      </div>
+    
+    
+      {/* INTERVIEW MODAL */}
+    
+      {showModal && (
+    
+        <div className="modal">
+    
+          <div className="modal-box">
+    
+            <h3>Schedule Interview</h3>
+    
+            <input
+              type="date"
+              value={modalData.date}
+              onChange={(e)=>setModalData({...modalData,date:e.target.value})}
+            />
+    
+            <input
+              type="time"
+              value={modalData.time}
+              onChange={(e)=>setModalData({...modalData,time:e.target.value})}
+            />
+    
+            <input
+              type="text"
+              placeholder="Meeting Link"
+              value={modalData.link}
+              onChange={(e)=>setModalData({...modalData,link:e.target.value})}
+            />
+    
+            <div className="modal-actions">
+    
+              <button className="btn-primary" onClick={submitSchedule}>
+                Confirm
+              </button>
+    
+              <button className="btn-danger" onClick={closeModal}>
+                Cancel
+              </button>
+    
+            </div>
+    
+          </div>
+    
+        </div>
+    
+      )}
+    
     </div>
-  )
+    
+    )
 }
