@@ -36,6 +36,7 @@ const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
   await apolloServer.start();
+
   app.use('/graphql', expressMiddleware(apolloServer, {
     context: async () => ({ io }),
   }));
@@ -46,4 +47,8 @@ const startServer = async () => {
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 };
 
-startServer();
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
+
+module.exports = app;
