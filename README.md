@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logowobg (1).png" alt="CampusLink Logo" width="200"/>
+  <img src="logo.png" alt="CampusLink Logo" width="200"/>
 </p>
 
 # CampusLink - University Placement Job Portal
